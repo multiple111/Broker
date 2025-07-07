@@ -384,8 +384,8 @@ function updatePortfolioUI(data) {
                 holdingElement.classList.add("holding");
                 holdingElement.innerHTML = `
                     <h4>${holding.name} (${holding.symbol})</h4>
-                    <p>Amount: ${holding.amount}</p>
-                    <p>Value: $${holding.value.toFixed(4)}</p>
+                    <p>Amount: $${holding.amount}</p>
+                    <p>Value: ${holding.value.toFixed(4)}</p>
                 `;
                 holdingsContainer.appendChild(holdingElement);
             });
