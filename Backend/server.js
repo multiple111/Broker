@@ -539,9 +539,19 @@ app.post('/admin/add-holding', authenticateJWT, async (req, res) => {
         const user = await User.findOne({ uid });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
+        // Add the new holding
         user.holdings.push({ name, symbol, amount, value });
+        
+        // Calculate new total balance (sum of all holding VALUES)
+        const totalBalance = user.holdings.reduce((sum, holding) => sum + holding.value, 0);
+        user.totalBalance = totalBalance;
+        
         await user.save();
-        res.json({ message: 'Holding added successfully', holdings: user.holdings });
+        res.json({ 
+            message: 'Holding added successfully', 
+            holdings: user.holdings,
+            totalBalance: user.totalBalance
+        });
     } catch (error) {
         console.error('Error adding holding:', error);
         res.status(500).json({ message: 'Server error' });
@@ -550,7 +560,7 @@ app.post('/admin/add-holding', authenticateJWT, async (req, res) => {
 
 
 // Update user's total balance
-app.put('/admin/user-balance/:uid', async (req, res) => {
+app.put('/admin/user-balance/:uid', authenticateJWT , async (req, res) => {
     const { uid } = req.params;
     const { totalBalance } = req.body;
 
@@ -570,27 +580,25 @@ app.put('/admin/user-balance/:uid', async (req, res) => {
 // Backend route to get user portfolio
 app.get('/portfolio', authenticateJWT, async (req, res) => {
   try {
-      console.log('Incoming request to /portfolio');
-      console.log('Decoded User:', req.user); // Log user from JWT
-
+      console.log('PORTFOLIO REQUEST - User ID:', req.user.id);
       const user = await User.findById(req.user.id);
+      
       if (!user) {
-          console.log('User not found in the database');
+          console.log('USER NOT FOUND FOR ID:', req.user.id);
           return res.status(404).json({ message: 'User not found' });
       }
 
-      console.log('Fetched user from database:', user);
-
+      console.log('USER FOUND - Balance:', user.totalBalance, 'Holdings:', user.holdings.length);
+      
       res.json({
-          totalBalance: user.totalBalance,   
+          totalBalance: user.totalBalance || 0, // Ensure never undefined
           holdings: user.holdings            
       });
   } catch (error) {
-      console.error('Error fetching portfolio:', error);
+      console.error('PORTFOLIO ERROR:', error);
       res.status(500).json({ message: 'Server error' });
   }
 });
-
 //Database for admin
 
 const adminSchema = new mongoose.Schema({
