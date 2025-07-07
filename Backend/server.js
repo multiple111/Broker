@@ -165,6 +165,18 @@ const depositSchema = new mongoose.Schema({
 // Initialize the Deposit model
 const Deposit = mongoose.model('Deposit', depositSchema);
 
+//PIN GENERATION DATABASE
+
+// PIN Schema definition and model
+const pinSchema = new mongoose.Schema({
+  pinCode: { type: String, required: true }, 
+  createdAt: { type: Date, default: Date.now }, 
+  expirationAt: { type: Date, required: true }, 
+  status: { type: String, enum: ['active', 'expired'], default: 'active' } 
+});
+
+
+const Pin = mongoose.model('Pin', pinSchema);
  
 // Fetch Bank Transfer Data
 app.get('/admin/deposit/bank-transfer', authenticateJWT, async (req, res) => {
@@ -706,6 +718,65 @@ app.post('/old/admin/login', async (req, res) => {
 });
 
 
+//Route to generate pin
+const SALT_ROUNDS = 10; // Adjust the salt rounds for encryption strength
+
+// Generate PIN API
+
+app.post('/admin/generate-pin', authenticateJWT, async (req, res) => {
+  const { pinLength, expirationTime } = req.body;
+
+  console.log("===== BACKEND LOGS =====");
+  console.log("Received pinLength (from frontend):", pinLength);
+  console.log("Received expirationTime (from frontend):", expirationTime);
+
+  try {
+    // Validate input
+    if (![4, 6].includes(pinLength)) {
+      console.error("Error: PIN length must be 4 or 6 digits.");
+      return res.status(400).json({ message: 'PIN length must be 4 or 6 digits' });
+    }
+
+    if (!expirationTime || isNaN(expirationTime)) {
+      console.error("Error: Valid expiration time is required.");
+      return res.status(400).json({ message: 'Valid expiration time is required' });
+    }
+
+    // Generate random PIN
+    const rawPin = Array(pinLength)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * 10))
+      .join(''); // Generate a random 4 or 6-digit PIN
+    console.log("Generated raw PIN:", rawPin);
+
+    // Encrypt the PIN
+    const encryptedPin = await bcrypt.hash(rawPin, SALT_ROUNDS);
+    console.log("Encrypted PIN:", encryptedPin);
+
+    // Calculate expiration timestamp
+    const expirationAt = new Date(Date.now() + expirationTime * 60 * 1000); // Convert minutes to milliseconds
+    console.log("Calculated expirationAt (timestamp):", expirationAt);
+
+    // Save the PIN to the database
+    const pin = new Pin({
+      pinCode: encryptedPin,
+      expirationAt,
+    });
+
+    await pin.save();
+    console.log("PIN saved to database successfully.");
+
+    // Return the raw PIN and expiration details to the admin
+    res.status(200).json({
+      message: 'PIN generated successfully',
+      pin: rawPin, // Send the raw PIN to the admin
+      expirationAt,
+    });
+  } catch (error) {
+    console.error("Error generating PIN:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
  
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
