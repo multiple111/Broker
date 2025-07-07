@@ -704,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Generate receipt HTML
       const receiptHTML = `
         <div class="receipt-header">
-          <div class="receipt-logo">STERLING EDGE TRADE</div>
+          <div class="receipt-logo">Elite Edge Market</div>
           <div class="receipt-title">PAYMENT RECEIPT</div>
           <div class="receipt-meta">
             <span>Receipt #: R${Math.floor(Math.random() * 1000)}</span>
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="receipt-footer">
           <p>Thank you for trading with us.</p>
-          <p>STERLING EDGE TRADE LLC</p>
+          <p>Elite Edge Market LLC</p>
           <p>Financial Street, New York, NY</p>
           <p>contact@tradingfirm.com | (555) 123-4567</p>
         </div>
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('save-png').addEventListener('click', function() {
       html2canvas(document.getElementById('receipt-printable')).then(canvas => {
         const link = document.createElement('a');
-        link.download = `sterling-payment-${new Date().getTime()}.png`;
+        link.download = `elite-edge-payment-${new Date().getTime()}.png`;
         link.href = canvas.toDataURL();
         link.click();
       });

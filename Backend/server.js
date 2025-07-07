@@ -41,7 +41,7 @@ app.use(bodyParser.json());
 
 // Allow specific origin
 app.use(cors({
-  origin: 'https://sterling-edge-trade.vercel.app', // your frontend domain
+  origin: 'https://www.eliteedgemarket.org',  
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -615,7 +615,7 @@ app.post('/api/send-email', authenticateJWT, async (req, res) => {
 
     // Set up mail options
     const mailOptions = {
-      from: `"Sterling Edge Trade" <${process.env.EMAIL_USER}>`,
+      from: `"Elite Edge Market" <${process.env.EMAIL_USER}>`,
       to: recipients,
       subject: subject,
       html: `
@@ -624,7 +624,7 @@ app.post('/api/send-email', authenticateJWT, async (req, res) => {
           
           <!-- Header Image -->
           <div style="background-color: #003366;">
-            <img src="cid:emailHeader" alt="Sterling Edge Trade" style="width: 100%; display: block;" />
+            <img src="cid:emailHeader" alt="Elite Edge Market" style="width: 100%; display: block;" />
           </div>
       
           <!-- Body -->
@@ -637,7 +637,7 @@ app.post('/api/send-email', authenticateJWT, async (req, res) => {
       
           <!-- Footer -->
           <div style="background-color: #003366; color: #ffffff; text-align: center; padding: 20px;">
-            <p style="margin: 0;">Sterling Edge Trade — We move with vision.</p>
+            <p style="margin: 0;">Elite Edge Market — We move with vision.</p>
             <div style="margin-top: 10px;">
               <img src="cid:iconFacebook" alt="Facebook" style="width: 24px; margin: 0 6px;" />
               <img src="cid:iconTwitter" alt="Twitter" style="width: 24px; margin: 0 6px;" />
