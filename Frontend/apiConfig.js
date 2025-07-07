@@ -4,7 +4,7 @@ const getApiBaseUrl = () => {
       window.location.port === '3000') {
     return 'http://localhost:3000';  
   }
-  return 'https://swift-edge-backend.onrender.com'; 
+  return 'https://broker-ydqv.onrender.com'; 
 };
 
 window.API_BASE_URL = getApiBaseUrl();
