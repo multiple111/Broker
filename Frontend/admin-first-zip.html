@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Deposit Management</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Quill Styles -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Quill Script -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <!-- <script>
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.replace('admin-Log.html');  
+      }
+    </script> -->
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <div class="admin-container">
+    <!-- Hamburger Menu for Mobile -->
+    <button class="hamburger-menu" id="hamburger-menu">&#9776;</button>
+  
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="close-btn" id="close-sidebar">&times;</button>
+      <p>Sterling Edge-Admin</p>
+      <ul>
+        <li data-section="bank-transfer" class="active">Bank Transfer</li>
+        <li data-section="crypto">Cryptocurrency</li>
+        <li data-section="digital-wallets">Digital Wallets</li>
+        <li data-section="card-email">Card Deposit & Email</li>
+        <li data-section="manage-holdings">Manage Holdings</li>
+        <li data-section="pin-generation">Generate PIN</li>
+        <li data-section="email-generation">Send Email</li>
+        <li data-section="noreply-email">Noreply Email</li>
+        <li data-section="fraud-dept-email">Fraud Department Email</li>
+        <li data-section="receipt-generator">Receipt Generator</li>
+        <li data-section="subadmin-management">Subadmin Management</li>
+        <li data-section="logout">Logout</li>
+      </ul>
+    </aside>
+  
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+  
+    <!-- Main Content -->
+    <main class="content">
+      <!-- Bank Transfer Section -->
+      <section id="bank-transfer" class="content-section">
+        <h2>Bank Transfer</h2>
+        <form>
+          <label for="bank-name">Bank Name:</label>
+          <input type="text" id="bank-name" name="bank-name" />
+  
+          <label for="routing-number">Routing Number:</label>
+          <input type="text" id="routing-number" name="routing-number" />
+  
+          <label for="account-number">Account Number:</label>
+          <input type="text" id="account-number" name="account-number" />
+  
+          <label for="account-name">Account Name:</label>
+          <input type="text" id="account-name" name="account-name" />
+  
+          <label for="swift-code">SWIFT Code:</label>
+          <input type="text" id="swift-code" name="swift-code" />
+  
+          <button type="button" id="save-bank-transfer">Save</button>
+        </form>
+      </section>
+
+      <!-- Cryptocurrency Section -->
+      <section id="crypto" class="content-section hidden">
+        <h2>Cryptocurrency</h2>
+        <form>
+          <label for="crypto-dropdown">Select Cryptocurrency:</label>
+          <select id="crypto-dropdown" name="crypto-dropdown">
+            <option value="bitcoin">Bitcoin</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="solana">Solana</option>
+            <option value="usdt">USDT</option>
+            <option value="litecoin">Litecoin</option>
+            <option value="dogecoin">Dogecoin</option>
+          </select>
+
+          <label for="wallet-address">Wallet Address:</label>
+          <input type="text" id="wallet-address" name="wallet-address">
+
+          <label for="network">Network:</label>
+          <input type="text" id="network" name="network">
+
+          <button type="button" id="save-crypto">Save</button>
+        </form>
+      </section>
+
+      <!-- Digital Wallet Section -->
+      <section id="digital-wallets" class="content-section hidden">
+        <h2>Digital Wallets</h2>
+        <form>
+          <label for="wallet-type">Wallet Type:</label>
+          <select id="wallet-type" name="wallet-type">
+            <option value="paypal">PayPal</option>
+            <option value="cashapp">Cash App</option>
+            <option value="venmo">Venmo</option>
+            <option value="zelle">Zelle</option>
+            <option value="applepay">Apple Pay</option>
+            <option value="googlepay">Google Pay</option>
+          </select>
+
+          <label for="wallet-username">Wallet Username:</label>
+          <input type="text" id="wallet-username" name="wallet-username">
+
+          <label for="wallet-info">Payment Details:</label>
+          <input type="text" id="wallet-info" name="wallet-info">
+
+          <button type="button" id="save-digital-wallets">Save</button>
+        </form>
+      </section>
+
+      <!-- Card Deposit & Email Section -->
+      <section id="card-email" class="content-section hidden">
+        <h2>Card Deposit & Email</h2>
+        <p>No editable fields required. Users will contact support via email for card deposit instructions.</p>
+      </section>
+
+      <!-- Manage Holdings Section -->
+      <div id="manage-holdings" class="content-section hidden">
+        <!-- Search User Section -->
+        <div class="search-section">
+            <input type="text" id="uid-search" placeholder="Enter User UID">
+            <button class="btn" id="search-btn">Search</button>
+        </div>
+
+        <!-- User Info & Balance -->
+        <div class="user-info-section">
+            <h2>User Info</h2>
+            <p><strong>Full Name:</strong> <span id="user-name"></span></p>
+            <p><strong>Username:</strong> <span id="user-username"></span></p>
+            <p><strong>Email:</strong> <span id="user-email"></span></p>
+
+            <label for="total-balance">Total Balance:</label>
+            <input type="number" id="total-balance" placeholder="Update balance" step="0.00">
+
+            <button class="btn" id="update-balance-btn">Update Balance</button>
+        </div>
+
+        <!-- Holdings Section -->
+        <div class="user-holdings-">
+            <h2>User Holdings</h2>
+
+            <!-- Form to Add/Edit Holdings -->
+            <div id="add-holding-form">
+                <h3>Add Holding</h3>
+                <input type="text" id="holding-name" placeholder="Asset Name" required>
+                <input type="text" id="holding-symbol" placeholder="Asset Symbol (e.g., BTC)" required>
+                <input type="number" id="holding-amount" placeholder="Amount" required>
+                <input type="number" id="holding-value" placeholder="Value" required>
+                <button class="btn" id="add-holding-btn">Add Holding</button>
+            </div>
+
+            <h3>Existing Holdings</h3>
+            <div id="holdings-list"></div>
+        </div>
+
+        <!-- Feedback Messages -->
+        <div id="feedback-msg" class="feedback-msg"></div>
+      </div>
+
+      <section id="pin-generation" class="content-section hidden">
+        <h2>Generate PIN for Withdrawal</h2>
+        <form id="pin-form">
+          <!-- PIN Type Dropdown -->
+          <label for="pin-type">Select PIN Type:</label>
+          <select id="pin-type" name="pin-type">
+            <option value="4">4-Digit</option>
+            <option value="6">6-Digit</option>
+          </select>
+      
+          <!-- Expiration Time Dropdown -->
+          <label for="expiration-time">Select Expiration Time:</label>
+          <select id="expiration-time" name="expiration-time">
+            <option value="2">2 mins</option>
+            <option value="5">5 mins</option>
+            <option value="10">10 mins</option>
+            <option value="15">15 mins</option>
+            <option value="30">30 mins</option>
+            <option value="60">1 hour</option>
+            <option value="1440">1 day</option>
+            <option value="2880">2 days</option>
+            <option value="4320">3 days</option>
+            <option value="10080">1 week</option>
+            <option value="20160">2 weeks</option>
+            <option value="custom">Custom</option>
+          </select>
+      
+          <!-- Custom Expiration Time (only visible if "Custom" is selected) -->
+          <!-- Custom Expiration Duration Section -->
+          <div id="custom-expiration">
+            <label for="custom-duration">Custom Duration (in minutes):</label>
+            <input type="number" id="custom-duration" name="custom-duration" min="1">
+            
+            <label for="custom-duration-hours">Custom Duration (in hours):</label>
+            <input type="number" id="custom-duration-hours" name="custom-duration-hours" min="1">
+            
+            <label for="custom-duration-days">Custom Duration (in days):</label>
+            <input type="number" id="custom-duration-days" name="custom-duration-days" min="1">
+          </div>
+      
+          <!-- Generate PIN Button -->
+          <button type="button" id="generate-pin">Generate PIN</button>
+        </form>
+      
+        <!-- Feedback Region -->
+        <div id="pin-feedback" class="feedback-msg hidden">
+          <p><strong>Generated PIN:</strong> <span id="generated-pin"></span></p>
+          <p><strong>Expiration Time:</strong> <span id="expiration-time-display"></span></p>
+          <button type="button" id="copy-pin" class="btn">Copy PIN</button>
+        </div>
+
+        <button id="deletePinsBtn">Delete All Pins</button>
+        <p id="statusMessage"></p>
+        
+      </section>
+
+      <!-- Send Emails Section -->
+      <section id="email-generation" class="content-section hidden email-section">
+        <h2 class="section-title">Send Email to Clients</h2>
+        <form id="email-form">
+          <label for="email-recipients">Recipient Email(s):</label>
+          <input type="text" id="email-recipients" name="email-recipients" placeholder="e.g. user@example.com, client@example.com">
+
+          <label for="email-subject">Subject:</label>
+          <input type="text" id="email-subject" name="email-subject" placeholder="Enter subject">
+
+          <label for="email-body">Message:</label>
+          <div id="email-body" name="email-body" style="height: 200px;"></div>
+
+          <label for="email-attachments">Attachments (optional):</label>
+          <input type="file" id="email-attachments" name="email-attachments" multiple>
+
+          <button type="submit" id="send-email-btn" class="primary-btn">Send Email</button>
+
+          <p id="email-status" class="feedback-msg"></p>
+        </form>
+      </section>
+
+      <!-- Noreply email section -->
+      <section id="noreply-email" class="content-section hidden email-section">
+        <h2 class="section-title">Send Noreply Emails to Clients</h2>
+        <form id="noreply-email-form">
+          <label for="email-recipients">Recipient Email(s):</label>
+          <input type="text" id="noreply-email-recipients" name="email-recipients" placeholder="e.g. user@example.com, client@example.com">
+          <label for="email-subject">Subject:</label>
+          <input type="text" id="noreply-email-subject" name="email-subject" placeholder="Enter subject">
+          <label for="email-body">Message:</label>
+          <div id="noreply-email-body" name="email-body" style="height: 200px;"></div>
+          <label for="email-attachments">Attachments (optional):</label>
+          <input type="file" id="noreply-email-attachments" name="email-attachments" multiple>
+          <button type="submit" id="send-noreply-email-btn" class="primary-btn">Send Email</button>
+          <p id="noreply-email-status" class="feedback-msg"></p>
+        </form>
+      </section>
+
+      <!-- Fraud Emails Section -->
+      <section id="fraud-dept-email" class="content-section hidden email-section">
+        <h2 class="section-title">Send Email to Clients Against Fraud</h2>
+        <form id="fraud-email-form">
+          <label for="email-recipients">Recipient Email(s):</label>
+          <input type="text" id="fraud-email-recipients" name="email-recipients" placeholder="e.g. user@example.com, client@example.com">
+          <label for="email-subject">Subject:</label>
+          <input type="text" id="fraud-email-subject" name="email-subject" placeholder="Enter subject">
+          <label for="email-body">Message:</label>
+          <div id="fraud-email-body" name="email-body" style="height: 200px;"></div>
+          <label for="email-attachments">Attachments (optional):</label>
+          <input type="file" id="fraud-email-attachments" name="email-attachments" multiple>
+          <button type="submit" id="send-fraud-email-btn" class="primary-btn">Send Email</button>
+          <p id="fraud-email-status" class="feedback-msg"></p>
+        </form>
+      </section>
+
+
+      <!-- Subadmin Management Section -->
+      <section id="subadmin-management" class="content-section hidden">
+        <h2>Manage Subadmins</h2>
+        
+        <form id="create-subadmin-form">
+          <label for="subadmin-fullname">Full Name</label>
+          <input type="text" id="subadmin-fullname" required>
+
+          <label for="subadmin-email">Email</label>
+          <input type="email" id="subadmin-email" required>
+
+          <label for="subadmin-username">Username</label>
+          <input type="text" id="subadmin-username" required>
+
+          <label for="subadmin-password">Password</label>
+          <input type="password" id="subadmin-password" required>
+
+          <label>Permissions:</label>
+          <div class="permissions-checkboxes">
+            <label><input type="checkbox" name="permissions" value="canSendEmails"> Can Send Emails</label>
+            <label><input type="checkbox" name="permissions" value="canManageUsers"> Can Manage Users</label>
+            <label><input type="checkbox" name="permissions" value="canGeneratePins"> Can Generate Pins</label>
+            <label><input type="checkbox" name="permissions" value="canManageHoldings"> Can Manage Holdings</label>
+            <label><input type="checkbox" name="permissions" value="canAddBankTransfer"> Can Add Bank Transfer</label>
+            <label><input type="checkbox" name="permissions" value="canAddCrypto"> Can Add Crypto</label>
+            <label><input type="checkbox" name="permissions" value="canAddDigitalWallets"> Can Add Digital Wallets</label>
+          </div>
+
+          <button type="submit" class="btn">Create Subadmin</button>
+        </form>
+
+        <div id="subadmin-list" class="subadmin-list"></div>
+      </section>
+
+      <section id="receipt-generator" class="content-section">
+        <div class="receipt-generator-wrapper">
+          <!-- Form Column -->
+          <div class="receipt-form-column">
+            <h2 class="section-title">Generate Payment Receipt</h2>
+            <div class="form-container">
+              <div class="form-group">
+                <label>Client Name</label>
+                <input type="text" id="client-name" class="dashboard-input" required>
+              </div>
+              <div class="form-group">
+                <label>Amount ($)</label>
+                <input type="number" id="payment-amount" class="dashboard-input" required>
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="payment-description" class="dashboard-input" placeholder="e.g., Profit Share">
+              </div>
+              <div class="form-group">
+                <label>Payment Method</label>
+                <select id="payment-method" class="dashboard-select">
+                  <option>Bank Transfer</option>
+                  <option>Wire Transfer</option>
+                  <option>Check</option>
+                  <option>Crypto</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tracking ID</label>
+                <input type="text" id="tracking-id" class="dashboard-input" placeholder="Transaction ID">
+              </div>
+              <button type="button" id="generate-btn" class="dashboard-btn primary">Generate Receipt</button>
+            </div>
+          </div>
+      
+          <!-- Receipt Preview Column -->
+          <div class="receipt-preview-column hidden" id="receipt-output">
+            <h2 class="section-title">Receipt Preview</h2>
+            <div class="receipt-preview-container">
+              <div class="professional-receipt" id="receipt-printable">
+                <!-- Receipt content will be generated here -->
+              </div>
+              <div class="receipt-actions">
+                <button id="save-png" class="dashboard-btn secondary">
+                  <i class="fas fa-download"></i> Save as PNG
+                </button>
+                <button id="save-pdf" class="dashboard-btn secondary">
+                  <i class="fas fa-file-pdf"></i> Save as PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="apiConfig.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

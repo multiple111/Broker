@@ -1,0 +1,553 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="App.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Smartsupp Live Chat script -->
+    <script type="text/javascript">
+      var _smartsupp = _smartsupp || {};
+      _smartsupp.key = 'ac7702e27237d39dfaf350f8dc6e7374c520e5ba';
+      window.smartsupp||(function(d) {
+      var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+      c.type='text/javascript';c.charset='utf-8';c.async=true;
+      c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+      })(document);
+      </script>
+      <noscript> Powered by <a href=“https://www.smartsupp.com” target=“_blank”>Smartsupp</a>
+  </noscript>
+
+  <!-- Smartsupp Live Chat script -->
+
+  <!-- smartsupp live chat is below with noreply email -->
+  <!-- <script type="text/javascript">
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = '8cddebe5aa780ebadf72011a7664e36a283eb0cf';
+    window.smartsupp||(function(d) {
+      var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+      c.type='text/javascript';c.charset='utf-8';c.async=true;
+      c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+    })(document);
+    </script>
+  <noscript> Powered by <a href=“https://www.smartsupp.com” target=“_blank”>Smartsupp</a></noscript> -->
+
+  <title>Dashboard</title>
+ </head>
+ <body>
+    <!-- Sidebar/Menu -->
+    <div class="sidebar" id="sidebar">
+      <h2>Sterling edge</h2>
+      <button class="close-btn" id="close-sidebar">&times;</button>
+      <ul>
+          <li><a href="#portfolio" id="portfolio-menu" class="active"><span class="icon">&#128176;</span> Portfolio</a></li>
+          <li><a href="#deposit" id="deposit-menu"><span class="icon"></span>Deposit</a></li>
+          <li><a href="#withdrawal" id="withdrawal-menu"><span class="icon"></span>Withdrawal</a></li>
+          <li><a href="#market" id="market-menu"><span class="icon">&#128200;</span> Market</a></li>
+          <li><a href="#trade" id="trading-menu"><span class="icon">&#128178;</span> Trade</a></li>
+          <li><a href="#calculator" id="calculator-menu"><span class="icon">&#128295;</span> Investment Calculator</a></li>
+          <li><a href="#transactions" id="transaction-menu"><span class="icon">&#128179;</span> Transactions</a></li>
+          <li><a href="#settings" id="settings-menu"><span class="icon">&#9881;</span> Settings</a></li>
+      </ul>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Top Navigation Bar -->
+      <div class="top-nav">
+        <button class="hamburger-menu" id="hamburger-menu">&#9776;</button>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for stocks, assets..." id="search-input">
+            <span class="search-icon">&#128269;</span>
+        </div>
+        <div class="user-info">
+            <span class="notification">&#128276;</span>
+            <span class="profile">👤</span>
+        </div>
+    </div>    
+      <!-- Placeholder for dynamic content
+      <div class="content-section">
+          <h1>Welcome to Trade Wave</h1>
+          <p>Select a menu option to view more details.</p>
+      </div> -->
+
+        <!-- Portfolio Section -->
+
+        <div class="user-welcome">
+          <p>Welcome, <strong id="username">Null</strong></p>
+          <p>UID: <strong id="UID">Null</strong></p>
+          <p>Current Status: <strong id="status">Null</strong></p>
+          <p>Last Login: <strong id="last-login">Session expired</strong></p>
+      </div>
+      
+      <div class="content-section" id="portfolio">
+          <h1>Portfolio Overview</h1>
+          <div class="portfolio-summary">
+            <div class="balance">
+              <h2>Total Balance</h2>
+              <p id="total-balance">$0.00</p>
+            </div>
+            <div class="actions">
+              <button class="btn deposit-btn" id="showDeposit-btn">Deposit</button>
+              <button class="btn withdraw-btn" id="showwithdrawal-btn">Withdraw</button>
+            </div>
+          </div>
+        
+          <h3>Your Holdings</h3>
+          <div class="holdings">
+            <!-- Holdings List (to be populated dynamically) -->
+          </div>
+      </div>
+
+      <!-- Market Data Section -->
+      <div class="content-section" id="market-data" style="display: none;">
+          <h1>Market Data</h1>
+          <div class="market-list" id="market-list">
+            <!-- Market data will be dynamically inserted here -->
+          </div>
+      </div>
+
+      <!-- Trade Section -->
+      <div class="content-section" id="trade" style="display: none;">
+        <h1 class="section-title">Trade and Invest</h1>
+        <p class="trade-intro">
+          Explore a wide range of investment options, from precious metals to real estate. Grow your wealth with confidence.
+        </p>
+
+        <!-- Precious Metals -->
+        <h2 class="subsection-title">Invest in Precious Metals</h2>
+        <div class="asset-grid">
+          <div class="asset-card">
+            <img src="images/gold.jpeg" alt="Gold Investment" class="asset-image">
+            <div class="asset-name">Gold</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/1000-grams-pure-silver-bars-and-coins.webp" alt="Silver Investment" class="asset-image">
+            <div class="asset-name">Silver</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/plantinum.jpg" alt="Platinum Investment" class="asset-image">
+            <div class="asset-name">Platinum</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+        </div>
+
+        <!-- Cryptocurrencies -->
+        <h2 class="subsection-title">Invest in Cryptocurrencies</h2>
+        <div class="asset-grid">
+          <div class="asset-card">
+            <img src="images/1.png" alt="Bitcoin Investment" class="asset-image">
+            <div class="asset-name">Bitcoin (BTC)</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/eth trend.png" alt="Ethereum Investment" class="asset-image">
+            <div class="asset-name">Ethereum (ETH)</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/sol.jpg" alt="Solana Investment" class="asset-image">
+            <div class="asset-name">Solana (SOL)</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+        </div>
+
+        <!-- Real Estate -->
+        <h2 class="subsection-title">Invest in Real Estate</h2>
+        <div class="asset-grid">
+          <div class="asset-card">
+            <img src="images/real estate 1.jpeg" alt="Real Estate Investment 1" class="asset-image">
+            <div class="asset-name">Real Estate Fund</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/real estate 2.jpg" alt="Real Estate Investment 2" class="asset-image">
+            <div class="asset-name">Real Estate Fund</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+          <div class="asset-card">
+            <img src="images/real estate 3.jpg" alt="Real Estate Investment 3" class="asset-image">
+            <div class="asset-name">Real Estate Fund</div>
+            <button class="invest-btn">Invest</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI Calculator Section -->
+      <div class="content-section calculator-section" id="calculator" style="display: none;">
+        <div class="calculator-container">
+            <h2 class="calculator-title">Investment ROI Calculator</h2>
+            <form id="roi-calculator-form">
+                <div class="calculator-field">
+                    <label for="investment-amount" class="calculator-label">Initial Investment Amount:</label>
+                    <input type="number" id="investment-amount" class="calculator-input" placeholder="Enter amount in USD" required>
+                </div>
+                <div class="calculator-field">
+                    <label for="rate-of-return" class="calculator-label">Annual Rate of Return (%):</label>
+                    <input type="number" id="rate-of-return" class="calculator-input" placeholder="Enter rate in %" required>
+                </div>
+                <div class="calculator-field">
+                    <label for="investment-duration" class="calculator-label">Investment Duration (Years):</label>
+                    <input type="number" id="investment-duration" class="calculator-input" placeholder="Enter duration in years" required>
+                </div>
+                <button type="submit" class="calculator-btn">Calculate ROI</button>
+            </form>
+            <div id="roi-result" class="calculator-result" style="display: none;">
+                <h3>Your Investment Return</h3>
+                <p id="roi-output"></p>
+            </div>
+        </div>
+      </div>
+
+      <!-- Settings Page Section -->
+      <div class="content-section" id="settings" style="display: none;">
+          <div class="settings-section">
+              <h2>Settings</h2>
+              
+              <!-- Change Password Section -->
+              <div class="settings-block">
+                  <h3>Change Password</h3>
+                  <label for="current-password">Current Password</label>
+                  <input type="password" id="current-password" placeholder="Enter current password">
+                  
+                  <label for="new-password">New Password</label>
+                  <input type="password" id="new-password" placeholder="Enter new password">
+                  
+                  <label for="confirm-password">Confirm New Password</label>
+                  <input type="password" id="confirm-password" placeholder="Confirm new password">
+                  
+                  <button class="btn">Change Password</button>
+              </div>
+      
+              <!-- Notification Preferences Section -->
+              <div class="settings-block">
+                  <h3>Notification Preferences</h3>
+                  <label for="email-notifications">Email Notifications</label>
+                  <input type="checkbox" id="email-notifications"> Enable email notifications
+                  
+                  <label for="sms-notifications">SMS Notifications</label>
+                  <input type="checkbox" id="sms-notifications"> Enable SMS notifications
+                  
+                  <button class="btn">Save Preferences</button>
+              </div>
+      
+              <!-- Update User Information Section -->
+              <div class="settings-block">
+                  <h3>Update User Information</h3>
+                  <label for="full-name">Full Name</label>
+                  <input type="text" id="full-name" placeholder="Enter full name">
+                  
+                  <label for="email">Email</label>
+                  <input type="email" id="email" placeholder="Enter email">
+                  
+                  <label for="phone">Phone Number</label>
+                  <input type="text" id="phone" placeholder="Enter phone number">
+                  
+                  <button class="btn">Update Information</button>
+              </div>
+          </div>
+      </div>
+
+    <!-- Deposit Section -->
+    <div class="content-section" id="deposit" style="display: none;">
+      <h1>Deposit Funds</h1>
+      <p>Select a deposit method and provide the necessary details to complete your deposit.</p>
+
+      <!-- Dropdown for Deposit Method -->
+      <div class="form-group">
+          <label for="deposit-method">Choose a Deposit Method:</label>
+          <select id="deposit-method" class="custom-dropdown">
+              <option value="" disabled selected>Select a method</option>
+              <option value="bank-transfer">Bank Transfer</option>
+              <option value="cryptocurrency">Cryptocurrency</option>
+              <option value="digital-wallet">Digital Wallet</option>
+              <option value="credit-card">Credit/Debit Card</option>
+              <option value="email-request">Deposit through Email</option>
+          </select>
+      </div>
+
+      <!-- Dynamic Sections -->
+      <div id="deposit-method-sections">
+          <!-- Bank Transfer Section -->
+          <div class="deposit-method-section" id="bank-transfer-section" style="display: none;">
+              <h2>Bank Transfer</h2>
+              <p>Provide the details below to complete a bank transfer.</p>
+              <div class="form-group">
+                  <label for="bank-name">Bank Name:</label>
+                  <input type="text" id="bank-name" value="Example Bank" disabled>
+                  <button class="copy-btn" onclick="copyToClipboard('bank-name')">Copy</button>
+              </div>
+              <div class="form-group">
+                  <label for="routing-number">Routing Number:</label>
+                  <input type="text" id="routing-number" value="123456789" disabled>
+                  <button class="copy-btn" onclick="copyToClipboard('routing-number')">Copy</button>
+              </div>
+              <div class="form-group">
+                  <label for="account-number"> Account Number:</label>
+                  <input type="text" id="account-number" value="1234567890" disabled>
+                  <button class="copy-btn" onclick="copyToClipboard('account-number')">Copy</button>
+              </div>
+              <div class="form-group">
+                  <label for="account-name">Account Name:</label>
+                  <input type="text" id="account-name" value="John Doe" disabled>
+                  <button class="copy-btn" onclick="copyToClipboard('account-name')">Copy</button>
+              </div>
+              <div class="form-group">
+                  <label for="swift-code">SWIFT Code:</label>
+                  <input type="text" id="swift-code" value="EXAMP123" disabled>
+                  <button class="copy-btn" onclick="copyToClipboard('swift-code')">Copy</button>
+              </div>
+              <div class="form-group">
+                  <label for="proof">Upload Proof of Transfer:</label>
+                  <input type="file" id="proof">
+              </div>
+              <button class="btn submit-btn">Submit</button>
+          </div>
+
+          <!-- Cryptocurrency Section -->
+          <div class="deposit-method-section" id="cryptocurrency-section" style="display: none;">
+            <h2>Cryptocurrency</h2>
+            <p>Send funds to the wallet address below and provide proof of transfer.</p>
+
+            <!-- Cryptocurrency Dropdown -->
+            <div class="form-group">
+                <label for="crypto-type">Select Cryptocurrency:</label>
+                <select id="crypto-type" class="custom-dropdown" onchange="updateCryptoDetails()">
+                    <option value="bitcoin">Bitcoin</option>
+                    <option value="ethereum">Ethereum</option>
+                    <option value="solana">Solana</option>
+                    <option value="usdt">USDT</option>
+                    <option value="litecoin">Litecoin</option>
+                    <option value="dogecoin">Dogecoin</option>
+                </select>
+            </div>
+
+            <!-- Wallet Address -->
+            <div class="form-group">
+                <label for="crypto-wallet">Wallet Address:</label>
+                <input type="text" id="crypto-wallet" value="Select a cryptocurrency to see the wallet address" disabled>
+                <button class="copy-btn" onclick="copyToClipboard('crypto-wallet')">Copy</button>
+            </div>
+
+            <!-- Network -->
+            <div class="form-group">
+                <label for="crypto-network">Network:</label>
+                <input type="text" id="crypto-network" value="Select a cryptocurrency to see the network" disabled>
+                <button class="copy-btn" onclick="copyToClipboard('crypto-network')">Copy</button>
+            </div>
+
+            <!-- Transaction Hash -->
+            <div class="form-group">
+                <label for="transaction-hash">Transaction Hash:</label>
+                <input type="text" id="transaction-hash" placeholder="Enter your transaction hash">
+            </div>
+
+            <!-- Upload Proof -->
+            <div class="form-group">
+                <label for="crypto-proof">Upload Proof of Transfer:</label>
+                <input type="file" id="crypto-proof">
+            </div>
+
+            <button class="btn submit-btn">Submit</button>
+          </div>
+
+
+          <!-- More sections for Digital Wallet, Credit/Debit Card, and Email Request -->
+
+          <!-- Digital Wallet Section -->
+          <div class="deposit-method-section" id="digital-wallet-section" style="display: none;">
+            <h2>Digital Wallet</h2>
+            <p>Choose your wallet type and send funds to the details provided below.</p>
+            
+            <div class="form-group">
+                <label for="wallet-type">Wallet Type:</label>
+                <select id="wallet-type" class="custom-dropdown" onchange="updateWalletDetails()">
+                    <option value="" disabled selected>Select Wallet</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="cashapp">Cash App</option>
+                    <option value="venmo">Venmo</option>
+                    <option value="zelle">Zelle</option>
+                    <option value="applepay">Apple Pay</option>
+                    <option value="googlepay">Google Pay</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="wallet-details" style="display: none;">
+                <label for="wallet-info">Payment Details:</label>
+                <input type="text" id="wallet-info" value="" disabled>
+                <button class="copy-btn" onclick="copyToClipboard('wallet-info')">Copy</button>
+            </div>
+          </div>
+
+          <!-- Credit/Debit Card Section -->
+          <div class="deposit-method-section" id="credit-card-section" style="display: none;">
+            <h2>Credit/Debit Card</h2>
+            <p>To proceed with deposits via Credit/Debit Card, kindly contact our support team for further instructions.</p>
+            
+            <div class="form-group">
+                <button class="btn contact-support-btn" onclick="redirectToSupportEmail()">Contact Support</button>
+            </div>
+          </div>
+
+          <!-- Deposit through Email Section -->
+          <div class="deposit-method-section" id="email-request-section" style="display: none;">
+            <h2>Deposit Through Email</h2>
+            <p>
+              For this deposit method, please contact our support team via email. We will provide you with the necessary details to proceed.
+            </p>
+
+            <div class="form-group">
+                <button class="btn contact-support-btn" onclick="redirectToEmailDepositSupport()">Contact Support</button>
+            </div>
+          </div>
+
+
+      </div>
+    </div>
+
+    
+    <div class="content-section" id="withdrawal" style="display: none ;">
+      <div class="withdrawal-section" id="withdrawal-section">
+          <div class="withdrawal-container">
+              <h2>Withdrawal Section</h2>
+      
+              <!-- Tab Navigation -->
+              <div class="withdrawal-tabs">
+                  <button class="withdrawal-tab active" data-method="crypto">Crypto Withdrawal</button>
+                  <button class="withdrawal-tab" data-method="bank">Bank Withdrawal</button>
+              </div>
+      
+              <!-- Crypto Withdrawal Form -->
+              <div class="withdrawal-method crypto-method" id="crypto-method">
+                  <form method="POST" class="withdrawal-form">
+                      <div class="withdrawal-group half-width">
+                          <label for="crypto-amount">Amount</label>
+                          <div class="amount-field">
+                              <span class="currency">$</span>
+                              <input type="number" id="crypto-amount" name="crypto-amount" placeholder="Enter amount" required>
+                          </div>
+                      </div>
+      
+                      <div class="withdrawal-group half-width">
+                          <label for="crypto-type">Withdrawal Type</label>
+                          <select id="crypto-type" name="crypto-type" required>
+                              <option value="">Select type</option>
+                              <option value="bitcoin">Bitcoin</option>
+                              <option value="ethereum">Ethereum</option>
+                              <option value="litecoin">Litecoin</option>
+                          </select>
+                      </div>
+      
+                      <div class="withdrawal-group full-width">
+                          <label for="crypto-wallet">Wallet Address</label>
+                          <input type="text" id="crypto-wallet" name="crypto-wallet" placeholder="Enter wallet address" required>
+                      </div>
+      
+                      <div class="withdrawal-group full-width">
+                          <button type="submit" class="withdrawal-submit">Withdraw Funds</button>
+                      </div>
+                  </form>
+              </div>
+      
+              <!-- Bank Withdrawal Form -->
+              <div class="withdrawal-method bank-method" id="bank-method" style="display: none;">
+                  <div class="withdrawal-warning">
+                      <p>⚠️ Name on account must match the username of the account.</p>
+                  </div>
+                  <form method="POST" class="withdrawal-form">
+                      <div class="withdrawal-group half-width">
+                          <label for="bank-name">Bank Name</label>
+                          <input type="text" id="bank-name" name="bank-name" placeholder="Enter bank name" required>
+                      </div>
+      
+                      <div class="withdrawal-group half-width">
+                          <label for="account-number">Account Number</label>
+                          <input type="text" id="account-number" name="account-number" placeholder="Enter account number" required>
+                      </div>
+      
+                      <div class="withdrawal-group half-width">
+                          <label for="routing-number">Routing Number</label>
+                          <input type="text" id="routing-number" name="routing-number" placeholder="Enter routing number" required>
+                      </div>
+      
+                      <div class="withdrawal-group half-width">
+                          <label for="bank-amount">Amount</label>
+                          <div class="amount-field">
+                              <span class="currency">$</span>
+                              <input type="number" id="bank-amount" name="bank-amount" placeholder="Enter amount" required>
+                          </div>
+                      </div>
+      
+                      <div class="withdrawal-group full-width">
+                          <button type="submit" class="withdrawal-submit">Withdraw Funds</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+      
+    </div>
+
+        <!-- Transaction Summary Modal -->
+        <div id="transaction-summary-modal" class="modal hidden">
+          <div class="modal-content">
+            <h3>Transaction Summary</h3>
+            <div class="transaction-details">
+              <p><strong>Amount:</strong> <span id="summary-amount">$0.00</span></p>
+              <p><strong>Withdrawal Method:</strong> <span id="summary-method">N/A</span></p>
+              <p><strong>Additional Info:</strong> <span id="summary-info">N/A</span></p>
+            </div>
+            <div class="modal-actions">
+              <button id="cancel-transaction" class="btn btn-ref">Cancel</button>
+              <button id="confirm-transaction" class="btn btn-green">Continue</button>
+            </div>
+          </div>
+        </div>
+    
+       <!-- withdrawal pin --> 
+        <div class="custom-card" style="display: none;">
+          <h1 class="custom-title">
+              <strong>Please enter your 4 or 6-digit PIN to proceed with the withdrawal.</strong>
+          </h1>
+      
+          <!-- PIN Input Section -->
+          <div class="pin-container">
+              <input type="text" id="custom-pin" class="pin-field" minlength="4" maxlength="6" readonly placeholder="----" />
+          </div>
+      
+          <!-- Onscreen Keyboard -->
+          <div class="custom-keyboard">
+              <button class="keyboard-key" data-key="1">1</button>
+              <button class="keyboard-key" data-key="2">2</button>
+              <button class="keyboard-key" data-key="3">3</button>
+              <button class="keyboard-key" data-key="4">4</button>
+              <button class="keyboard-key" data-key="5">5</button>
+              <button class="keyboard-key" data-key="6">6</button>
+              <button class="keyboard-key" data-key="7">7</button>
+              <button class="keyboard-key" data-key="8">8</button>
+              <button class="keyboard-key" data-key="9">9</button>
+              <button class="keyboard-key cancel-key" data-key="clear">&#10005; Cancel</button>
+              <button class="keyboard-key" data-key="0">0</button>
+              <button class="keyboard-key help-key" data-key="question">?</button>
+              <button class="keyboard-key submit-key" data-key="submit">Submit</button>
+          </div>
+        </div>
+
+
+    </div>
+    <script src="apiConfig.js"></script>
+    <script src="App.js"></script>
+    <script src="translate.js"></script>
+ </body>
+ </html>

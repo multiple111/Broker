@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Fullscreen Background Video */
+    .video-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Overlay and Welcome Message */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #fff;
+    }
+
+    .overlay h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .overlay p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .continue-btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      color: #fff;
+      background-color: #ff8000;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    /* Price Ticker */
+    .price-ticker {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 255, 0.3); /* Blue background */
+      color: #fff; /* White text */
+      padding: 0.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      font-weight: bold; /* Bold text */
+    }
+
+    .ticker-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker 20s linear infinite;
+      font-size: 1.2rem; /* Larger font size for better legibility */
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <video class="video-background" autoplay muted loop>
+    <source src="images/wel_Back.mp4" type="video/mp4">
+  </video>
+
+  <!-- Overlay Content -->
+  <div class="overlay">
+    <div>
+      <h1>Welcome, <strong id="username"></strong></h1>
+      <p>Experience the future of trading and investment with us.</p>
+      <button class="continue-btn" onclick="proceed()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Price Ticker -->
+  <div class="price-ticker">
+    <span class="ticker-text" id="ticker"></span>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="apiConfig.js"></script>
+  <script>
+    function proceed() {
+      window.location.href = "App.html"; // Redirect to main application page
+    }
+
+    async function fetchCryptos() {
+      const cryptoIds = ['bitcoin', 'ethereum', 'ripple', 'litecoin', 'cardano', 'polkadot', 'dogecoin']; // List of cryptocurrency IDs
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        updateTicker(data);
+      } catch (error) {
+        console.error("Error fetching cryptocurrency data:", error);
+      }
+    }
+
+    function updateTicker(data) {
+      const cryptoList = Object.entries(data).map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: $${value.usd}`).join(' | ');
+      document.getElementById('ticker').textContent = cryptoList;
+    }
+
+    window.onload = () => {
+      fetchCryptos();
+
+      // Fetch username and display it
+      const token = localStorage.getItem('authToken'); 
+      if (token) {
+        fetch(`${API_BASE_URL}/user-info`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.username) {
+              document.getElementById('username').textContent = data.username;
+            } else {
+              document.getElementById('username').textContent = 'Guest';
+            }
+          })
+          .catch(error => console.error('Error fetching user details:', error));
+      } else {
+        document.getElementById('username').textContent = 'Guest';
+      }
+    };
+  </script>
+  <script src="translate.js"></script>
+</body>
+</html>

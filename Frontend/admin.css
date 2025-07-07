@@ -1,0 +1,873 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Admin Container */
+.admin-container {
+  display: flex;
+  width: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #1e1e2f;
+  color: white;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0; /* Make visible on larger screens */
+  height: 100%;
+  z-index: 1000;
+  transition: left 0.3s ease-in-out;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar ul li {
+  padding: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar ul li:hover,
+.sidebar ul li.active {
+  background-color: #333354;
+  color: #ff8000;
+}
+
+.sidebar p{
+  color: #ff8000;
+  font-size: 20px;
+  padding-bottom: 10px;
+}
+
+.sidebar .close-btn {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: none;
+}
+
+.sidebar.open .close-btn {
+  display: block;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  z-index: 999;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hamburger Menu */
+.hamburger-menu {
+  display: none;
+  font-size: 1.5rem;
+  background: none !important;
+  border: none;
+  cursor: pointer;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1001;
+  color: #1e1e2f;
+}
+
+/* Main Content */
+.content {
+  flex: 1;
+  padding: 20px;
+  padding-top: 60px; /* Added padding for spacing */
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  margin-left: 250px;
+}
+
+.content-section {
+  display: none;
+}
+
+.content-section.active {
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -250px;
+  }
+
+  .hamburger-menu {
+    display: block;
+  }
+
+  .content {
+    margin-left: 0;
+  }
+}
+
+
+/* main content section styling */
+
+
+/* General Styles for Sections */
+.content-section {
+  margin-bottom: 30px;
+}
+
+.content-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+input, select {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+button {
+  background-color: #ff8000;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #e67800;
+}
+
+/* Specific Section Styling */
+
+/* Bank Transfer Section */
+#bank-transfer input {
+  width: 100%;
+}
+
+#save-bank-transfer {
+  width: 100%;
+}
+
+/* Cryptocurrency Section */
+#crypto select, #crypto input {
+  width: 100%;
+}
+
+#save-crypto {
+  width: 100%;
+}
+
+/* Digital Wallet Section */
+#digital-wallets select, #digital-wallets input {
+  width: 100%;
+}
+
+#save-digital-wallets {
+  width: 100%;
+}
+
+/* Card Deposit & Email Section */
+#card-email {
+  padding: 15px;
+  background-color: #f4f4f4;
+  border-radius: 5px;
+}
+
+#card-email p {
+  color: #333;
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0; /* Ensure content is not pushed off-screen */
+  }
+
+  .content-section {
+    padding: 15px;
+  }
+
+  form {
+    margin-top: 20px;
+  }
+
+  label, input, select, button {
+    font-size: 0.9rem; /* Adjust font size for mobile */
+  }
+  
+  button {
+    padding: 12px;
+    font-size: 1.1rem;
+  }
+
+  /* Bank Transfer Section */
+  #bank-transfer input, #save-bank-transfer {
+    width: 100%;
+  }
+
+  /* Cryptocurrency Section */
+  #crypto select, #crypto input, #save-crypto {
+    width: 100%;
+  }
+
+  /* Digital Wallet Section */
+  #digital-wallets select, #digital-wallets input, #save-digital-wallets {
+    width: 100%;
+  }
+
+  /* Card Deposit & Email Section */
+  #card-email {
+    padding: 10px;
+  }
+}
+
+
+/* Manage Holdings Section Styles */
+#manage-holdings {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+/* Search Section */
+.search-section {
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.search-section input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  flex: 1;
+}
+
+.search-section button {
+  padding: 10px 20px;
+  background-color: #ff8000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-section button:hover {
+  background-color: #e67800;
+}
+
+/* User Info Section */
+.user-info-section {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.user-info-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.user-info-section p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.user-info-section label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.user-info-section input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.user-info-section button {
+  background-color: #ff8000;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.user-info-section button:hover {
+  background-color: #e67800;
+}
+
+/* Holdings Section */
+.user-holdings- {
+  margin-top: 30px;
+}
+
+.user-holdings- h2 {
+  font-size: 1.6rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+#add-holding-form {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+#add-holding-form h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+#add-holding-form input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+}
+
+#add-holding-form button {
+  background-color: #ff8000;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+#add-holding-form button:hover {
+  background-color: #e67800;
+}
+
+#holdings-list {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.feedback-msg {
+  padding: 10px;
+  margin-top: 20px;
+  background-color: #fffbcc;
+  border: 1px solid #ffeb3b;
+  border-radius: 5px;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #manage-holdings {
+    padding: 15px;
+  }
+
+  .search-section input, .search-section button, .user-info-section input, .user-info-section button,
+  #add-holding-form input, #add-holding-form button {
+    font-size: 0.9rem; /* Adjust font size for mobile */
+  }
+
+  .search-section input, .search-section button, .user-info-section input, .user-info-section button,
+  #add-holding-form input, #add-holding-form button {
+    width: 100%;
+  }
+
+  .feedback-msg {
+    font-size: 0.9rem;
+  }
+}
+
+
+/* Search Section */
+.search-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-section input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  margin-right: 10px; /* Space between input and button */
+}
+
+.search-section button {
+  padding: 10px 20px;
+  background-color: #ff8000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-section button:hover {
+  background-color: #e67800;
+}
+
+/* Responsive Adjustment for Mobile Devices */
+@media (max-width: 768px) {
+  .search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-section input {
+    margin-right: 0;
+    margin-bottom: 10px; /* Space between input and button */
+    width: 100%;
+  }
+
+  .search-section button {
+    width: 100%;
+  }
+}
+
+/* Generate pin css code */
+
+/* PIN Generation Section Styling */
+#pin-generation {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+/* Section Heading */
+#pin-generation h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Form Styling */
+#pin-form {
+  display: flex;
+  flex-direction: column;
+}
+
+#pin-form label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+/* Dropdown and Input Fields */
+#pin-form select, #pin-form input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+/* Custom Expiration Styling */
+/* Custom Expiration Styling */
+#custom-expiration {
+  display: none; /* Initially hidden */
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+#custom-expiration label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+#custom-expiration input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+}
+
+
+/* Button Styling */
+#generate-pin {
+  background-color: #ff8000;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+#generate-pin:hover {
+  background-color: #e67800;
+}
+
+/* Feedback Region */
+#pin-feedback {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+  /* display: none; */
+}
+
+#pin-feedback p {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+#copy-pin {
+  background-color: #ff8000;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+#copy-pin:hover {
+  background-color: #e67800;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #pin-generation {
+    padding: 15px;
+  }
+
+  #pin-form label, #pin-form select, #pin-form input, #generate-pin {
+    font-size: 0.9rem; /* Adjust font size for mobile */
+  }
+
+  #generate-pin {
+    padding: 12px;
+  }
+
+  #pin-feedback p {
+    font-size: 0.9rem;
+  }
+}
+
+ 
+  #deletePinsBtn {
+    display: block;
+    margin: 50px auto; /* Adds space above and centers the button horizontally */
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ff8000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  /* Center the message */
+  #statusMessage {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+
+ 
+/* Email Section Styling */
+.email-section {
+  width: 100%;
+  padding: 40px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2e2e2e;
+  margin-bottom: 20px;
+}
+
+/* Form */
+#email-generation form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Labels */
+#email-generation label {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Inputs */
+#email-generation input[type="text"],
+#email-generation input[type="file"] {
+  padding: 12px;
+  border: 1px solid #d1d3e2;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  background-color: #f8f9fc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Centered Button with Updated Color */
+.primary-btn {
+  background-color: #ff8000;
+  color: #fff;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  align-self: center; /* 👈 Center button horizontally */
+}
+
+.primary-btn:hover {
+  background-color: #e76f00;
+}
+
+/* Feedback Message */
+.feedback-msg {
+  margin-top: 10px;
+  font-size: 14px;
+  color: green;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .email-section {
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  #email-generation label {
+    font-size: 14px;
+  }
+
+  #email-generation input[type="text"],
+  #email-generation input[type="file"] {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .primary-btn {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+/* sub admin section styling */
+
+.permissions-checkboxes {
+  margin: 10px 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.subadmin-list {
+  margin-top: 30px;
+}
+
+/* Receipt Generator styles */
+/* Receipt Generator Section */
+#receipt-generator {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.receipt-generator-wrapper {
+  display: flex;
+  gap: 30px;
+}
+
+.receipt-form-column, 
+.receipt-preview-column {
+  flex: 1;
+}
+
+/* Professional Receipt Styling */
+.professional-receipt {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  border-top: 4px solid #3498db;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.receipt-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.receipt-title {
+  font-size: 18px;
+  color: #34495e;
+  margin: 10px 0;
+}
+
+.receipt-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.receipt-body {
+  margin: 20px 0;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.receipt-label {
+  color: #7f8c8d;
+}
+
+.receipt-value {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.receipt-amount {
+  font-family: 'Courier New', monospace;
+}
+
+.tracking-id {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 20px 0;
+  text-align: center;
+  font-family: monospace;
+  border: 1px dashed #ddd;
+}
+
+.receipt-footer {
+  margin-top: 30px;
+  font-size: 13px;
+  color: #7f8c8d;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .receipt-generator-wrapper {
+    flex-direction: column;
+  }
+}

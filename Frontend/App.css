@@ -1,0 +1,1819 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100%;
+  background-color: #1e1e2f;
+  color: #fff;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar h2 {
+  color: #ff8000;
+  margin-bottom: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar ul li {
+  margin-bottom: 10px;
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #aaa;
+  padding: 10px;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background-color: #333354;
+  color: #ff8000;
+}
+
+.sidebar .icon {
+  margin-right: 10px;
+}
+
+.sidebar .close-btn {
+  background: none;
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+/* Overlay Styling */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+ 
+.main-content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content.with-sidebar {
+  margin-left: 250px;
+}
+
+ 
+.top-nav {
+  display: flex;
+  justify-content: space-between;  
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+ 
+@media (max-width: 768px) {
+  .top-nav {
+      flex-wrap: wrap;  
+  }
+  .search-bar {
+      flex: 1;   
+      margin: 10px 0;  
+  }
+  .user-info {
+      justify-content: flex-end;  
+  }
+}
+
+
+.hamburger-menu {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ 
+body.no-scroll {
+  overflow: hidden;
+}
+
+
+ 
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 10px;
+}
+
+ 
+.search-bar input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;  
+  border: 1px solid #ddd;
+  border-radius: 25px;  
+  background-color: #f9f9f9;
+  font-size: 1rem;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+ 
+.search-bar input:focus {
+  border-color: #ff8000;
+  box-shadow: 0 0 5px rgba(255, 128, 0, 0.5);
+  outline: none;
+}
+
+ 
+.search-bar input::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+ 
+.search-bar .search-icon {
+  position: absolute;
+  left: 15px;  
+  color: #aaa;
+  font-size: 1.2rem;
+  pointer-events: none;  
+}
+
+/* content section predefined styles */
+
+
+.content-section {
+  display: none; 
+}
+
+.content-section {
+  flex: 1;
+  overflow-y: auto;  
+  padding: 20px;
+}
+
+
+/* Portfolio Section Styling */
+.portfolio-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.balance h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.balance p {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff8000;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.deposit-btn {
+  background-color: #4CAF50;
+}
+
+.withdraw-btn {
+  background-color: #FF5733;
+}
+
+.holdings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.holdings .holding {
+  flex: 1 1 calc(33.333% - 15px);
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.holdings .holding h4 {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.holdings .holding p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .portfolio-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .balance h2 {
+    font-size: 1.3rem;
+  }
+
+  .balance p {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .actions .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .holdings {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .holdings .holding {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .portfolio-summary {
+    padding: 15px;
+  }
+
+  .balance h2 {
+    font-size: 1.2rem;
+  }
+
+  .balance p {
+    font-size: 1.4rem;
+  }
+
+  .actions .btn {
+    padding: 8px 16px;
+  }
+
+  .holdings .holding h4 {
+    font-size: 1rem;
+  }
+
+  .holdings .holding p {
+    font-size: 0.9rem;
+  }
+}
+
+
+/* welcome sections */
+
+/* Scoped Welcome Section Styling */
+.user-welcome {
+  background: linear-gradient(135deg, #667eea, #764ba2); /* Elegant gradient background */
+  color: #fff;
+  padding: 30px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-welcome:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Welcome Message */
+.user-welcome p {
+  font-size: 1.1rem;
+  margin: 10px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.user-welcome strong {
+  font-weight: bold;
+  color: #ffeb3b; /* Highlight color for emphasis */
+}
+
+/* Decorative Elements (Optional) */
+.user-welcome::before,
+.user-welcome::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  top: -50px;
+  right: -50px;
+  z-index: 0;
+  animation: float 6s ease-in-out infinite;
+}
+
+.user-welcome::after {
+  width: 150px;
+  height: 150px;
+  top: auto;
+  bottom: -75px;
+  left: -75px;
+  animation-delay: -3s;
+}
+
+@keyframes float {
+  0%, 100% {
+      transform: translateY(0) rotate(0deg);
+  }
+  50% {
+      transform: translateY(20px) rotate(360deg);
+  }
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  .user-welcome {
+      padding: 20px 15px;
+  }
+
+  .user-welcome p {
+      font-size: 1rem;
+  }
+
+  .user-welcome strong {
+      color: #ffd700; /* Slightly different highlight color for mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .user-welcome {
+      padding: 15px 10px;
+  }
+
+  .user-welcome p {
+      font-size: 0.9rem;
+  }
+
+  .user-welcome strong {
+      font-size: 1rem;
+  }
+}
+
+
+/* Market Data Section Styling */
+.market-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.market-item {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.market-item h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.market-item button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.market-item button:hover {
+  background-color: #218838;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .market-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .market-item h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+
+  .market-item button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .market-item {
+    padding: 10px;
+  }
+
+  .market-item h3 {
+    font-size: 1.2rem;
+  }
+
+  .market-item button {
+    padding: 10px;
+  }
+}
+
+
+
+/* Section Titles */
+.section-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.trade-intro {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.subsection-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #444;
+  margin-top: 25px;
+  margin-bottom: 15px;
+}
+
+/* Asset Grid */
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+/* Asset Card */
+.asset-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.asset-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Asset Image */
+.asset-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Asset Name */
+.asset-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Invest Button */
+.invest-btn {
+  background-color: #007bff;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.invest-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .subsection-title {
+    font-size: 1.4rem;
+  }
+
+  .trade-intro {
+    font-size: 0.9rem;
+  }
+
+  .asset-card {
+    padding: 15px;
+  }
+
+  .invest-btn {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .subsection-title {
+    font-size: 1.2rem;
+  }
+
+  .trade-intro {
+    font-size: 0.8rem;
+  }
+
+  .invest-btn {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
+
+/* Settings Section General Styles */
+#settings {
+  padding: 20px;
+}
+
+.settings-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-section h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Settings Block */
+.settings-block {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.settings-block h3 {
+  font-size: 1.5rem;
+  color: #444;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+}
+
+/* Labels and Inputs */
+.settings-block label {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.settings-block input[type="password"],
+.settings-block input[type="text"],
+.settings-block input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Checkboxes */
+.settings-block input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.settings-block label[for="email-notifications"],
+.settings-block label[for="sms-notifications"] {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.settings-block .btn {
+  display: inline-block;
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.settings-block .btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .settings-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .settings-block h3 {
+    font-size: 1.3rem;
+  }
+
+  .settings-block label {
+    font-size: 0.9rem;
+  }
+
+  .settings-block input {
+    font-size: 0.9rem;
+  }
+
+  .settings-block .btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .settings-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .settings-block h3 {
+    font-size: 1.2rem;
+  }
+
+  .settings-block label {
+    font-size: 0.8rem;
+  }
+
+  .settings-block input {
+    font-size: 0.8rem;
+  }
+
+  .settings-block .btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
+
+/* General Styles for Deposit Section */
+#deposit {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+#deposit h1,
+#deposit h2 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#deposit p {
+  color: #555;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Form Group Styling */
+#deposit .form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#deposit label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+#deposit input[type="text"],
+#deposit input[type="file"],
+#deposit select {
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+#deposit input[disabled] {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Dropdown Styling */
+#deposit select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23777" width="24px" height="24px"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  background-size: 16px;
+}
+
+#deposit select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Buttons */
+#deposit .btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 150px;
+  margin-top: 10px;
+  align-self: center;
+}
+
+#deposit .btn:hover {
+  background-color: #0056b3;
+}
+
+/* Copy Button */
+#deposit .copy-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#deposit .copy-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Dynamic Section Visibility */
+#deposit-method-sections .deposit-method-section {
+  display: none;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+/* General mobile responsiveness adjustments */
+@media (max-width: 768px) {
+
+  /* Deposit Section Container */
+  #deposit {
+      padding: 15px;
+      max-width: 100%;
+      margin: 10px auto;
+  }
+
+  /* Heading adjustments */
+  #deposit h1 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 10px;
+  }
+
+  #deposit p {
+      font-size: 1rem;
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 20px;
+  }
+
+  /* Form Group Layout */
+  #deposit .form-group {
+      margin-bottom: 15px;
+      flex-direction: column;
+  }
+
+  #deposit label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+  }
+
+  #deposit input[type="text"],
+  #deposit input[type="file"],
+  #deposit select {
+      padding: 12px;
+      font-size: 14px;
+  }
+
+  /* Dropdown styling adjustments */
+  #deposit select {
+      font-size: 14px;
+  }
+
+  /* Buttons adjustments */
+  #deposit .btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+  }
+
+  #deposit .copy-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+  }
+
+  /* Dynamic Sections */
+  #deposit-method-sections .deposit-method-section {
+      padding: 15px;
+      margin-top: 20px;
+  }
+
+  /* Adjustments for disabled input fields */
+  #deposit input[disabled] {
+      background-color: #e9ecef;
+  }
+
+  /* Hide the copy button if the input field is disabled */
+  #deposit .copy-btn {
+      display: inline-block;
+  }
+
+  /* Adjust the section headers */
+  #deposit .deposit-method-section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      text-align: center;
+  }
+
+  /* Center submit button */
+  #deposit .submit-btn {
+      width: 100%;
+      max-width: 200px;
+      margin-top: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+  }
+
+  /* For form fields that are too wide, ensure they fit the screen */
+  #deposit .form-group input[type="file"] {
+      width: 100%;
+  }
+}
+
+/* Mobile-first (For screens under 480px width) */
+@media (max-width: 480px) {
+
+  #deposit h1 {
+      font-size: 1.3rem;
+  }
+
+  #deposit p {
+      font-size: 0.9rem;
+  }
+
+  #deposit .form-group {
+      margin-bottom: 12px;
+  }
+
+  #deposit .btn {
+      font-size: 14px;
+      padding: 10px;
+  }
+
+  #deposit .copy-btn {
+      font-size: 12px;
+  }
+
+  #deposit input[type="text"],
+  #deposit input[type="file"],
+  #deposit select {
+      font-size: 14px;
+      padding: 10px;
+  }
+
+  /* Buttons on smaller screens */
+  #deposit .submit-btn {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+  }
+
+  #deposit .form-group input[type="file"] {
+      padding: 10px;
+  }
+
+  /* Dropdown styling for small screens */
+  #deposit select {
+      font-size: 14px;
+  }
+
+  /* Make text inputs take up the full width */
+  #deposit input[type="text"],
+  #deposit input[type="file"],
+  #deposit select {
+      width: 100%;
+  }
+
+  /* Ensure the copy button stays on the same line as the input field */
+  #deposit .copy-btn {
+      display: inline-block;
+      margin-top: 10px;
+  }
+}
+
+
+/* withdrawal section styling */
+
+.withdrawal-section .withdrawal-container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.withdrawal-section h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tabs Styling */
+.withdrawal-section .withdrawal-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.withdrawal-section .withdrawal-tab {
+  flex: 1;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 10px 10px 0 0;
+}
+
+.withdrawal-section .withdrawal-tab.active {
+  background: #007bff;
+  color: #fff;
+  border-bottom: 2px solid white;
+}
+
+/* Form Styling */
+.withdrawal-section .withdrawal-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.withdrawal-section .withdrawal-group {
+  margin-bottom: 1.5rem;
+}
+
+.withdrawal-section .half-width {
+  flex: 1 1 48%;
+}
+
+.withdrawal-section .full-width {
+  flex: 1 1 100%;
+}
+
+.withdrawal-section .amount-field {
+  display: flex;
+  align-items: center;
+}
+
+.withdrawal-section .currency {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.withdrawal-section input, 
+.withdrawal-section select, 
+.withdrawal-section button {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.withdrawal-section .withdrawal-submit {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.withdrawal-section .withdrawal-submit:hover {
+  background-color: #218838;
+}
+
+/* Warning Box */
+.withdrawal-section .withdrawal-warning {
+  background: #ffefc1;
+  color: #856404;
+  padding: 1rem;
+  border: 1px solid #ffeeba;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .withdrawal-section .half-width {
+      flex: 1 1 100%;
+  }
+}
+
+/* Mobile View Styling */
+@media (max-width: 768px) {
+   
+  .withdrawal-section .withdrawal-form {
+      flex-direction: column;
+  }
+
+   
+  .withdrawal-section .half-width, 
+  .withdrawal-section .full-width {
+      flex: 1 1 100%;
+  }
+
+   
+  .withdrawal-section .withdrawal-tabs {
+      flex-direction: column;
+      gap: 0.5rem;
+  }
+
+  .withdrawal-section .withdrawal-tab {
+      border-radius: 5px;
+      padding: 1rem;
+      font-size: 1rem;
+  }
+
+ 
+  .withdrawal-section .withdrawal-group {
+      margin-bottom: 1rem;
+  }
+
+  .withdrawal-section input, 
+  .withdrawal-section select, 
+  .withdrawal-section button {
+      padding: 1rem;
+      font-size: 1rem;
+  }
+
+ 
+  .withdrawal-section .withdrawal-submit {
+      margin: 1rem auto 0 auto;
+      width: 100%;  
+      font-size: 1.1rem;
+  }
+
+   
+  .withdrawal-section .withdrawal-warning {
+      font-size: 0.9rem;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+  }
+}
+
+
+/* General Cryptocurrency Section Styling */
+#cryptocurrency-section {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #ffffff;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#cryptocurrency-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#cryptocurrency-section p {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* Form Group Styling */
+#cryptocurrency-section .form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#cryptocurrency-section label {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #444;
+}
+
+#cryptocurrency-section input[type="text"],
+#cryptocurrency-section input[type="file"],
+#cryptocurrency-section select {
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+/* Dropdown Styling */
+#cryptocurrency-section select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23777" width="24px" height="24px"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+#cryptocurrency-section select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Disabled Fields */
+#cryptocurrency-section input[disabled] {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+#cryptocurrency-section .btn,
+#cryptocurrency-section .copy-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  align-self: center;
+}
+
+#cryptocurrency-section .btn:hover,
+#cryptocurrency-section .copy-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Align Copy Button with Input */
+#cryptocurrency-section .copy-btn {
+  margin-left: 10px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #cryptocurrency-section {
+      padding: 15px;
+  }
+
+  #cryptocurrency-section h2 {
+      font-size: 1.25rem;
+  }
+
+  #cryptocurrency-section label {
+      font-size: 0.9rem;
+  }
+
+  #cryptocurrency-section input,
+  #cryptocurrency-section select {
+      font-size: 14px;
+      padding: 8px;
+  }
+
+  #cryptocurrency-section .btn,
+  #cryptocurrency-section .copy-btn {
+      font-size: 14px;
+      padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #cryptocurrency-section h2 {
+      font-size: 1.1rem;
+  }
+
+  #cryptocurrency-section input,
+  #cryptocurrency-section select {
+      font-size: 12px;
+  }
+
+  #cryptocurrency-section .btn,
+  #cryptocurrency-section .copy-btn {
+      font-size: 12px;
+  }
+}
+
+
+/* Digital Wallet Section */
+#digital-wallet-section {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+/* Section Heading */
+#digital-wallet-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Section Description */
+#digital-wallet-section p {
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Dropdown Styling */
+#digital-wallet-section select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23777" width="24px" height="24px"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+  background-size: 16px;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+#digital-wallet-section select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Payment Details Input */
+#digital-wallet-section input[type="text"] {
+  width: calc(100% - 50px);
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+#digital-wallet-section input[disabled] {
+  background-color: #e9ecef;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Copy Button */
+#digital-wallet-section .copy-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#digital-wallet-section .copy-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #digital-wallet-section select {
+    font-size: 14px;
+  }
+
+  #digital-wallet-section input[type="text"] {
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  #digital-wallet-section .copy-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #digital-wallet-section h2 {
+    font-size: 1.25rem;
+  }
+
+  #digital-wallet-section p {
+    font-size: 0.9rem;
+  }
+
+  #digital-wallet-section select,
+  #digital-wallet-section input[type="text"] {
+    font-size: 14px;
+  }
+
+  #digital-wallet-section .copy-btn {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
+
+/* Credit/Debit Card Section Styling */
+#credit-card-section {
+  text-align: center;
+}
+
+#credit-card-section p {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.contact-support-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.contact-support-btn:hover {
+  background-color: #218838;
+}
+
+
+/* Deposit Through Email Section Styling */
+#email-request-section {
+  text-align: center;
+}
+
+#email-request-section p {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.contact-support-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.contact-support-btn:hover {
+  background-color: #0056b3;
+}
+
+
+/* ROI Calculator Styles */
+.calculator-section {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 20px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-title {
+  text-align: center;
+  font-size: 1.8em;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.calculator-field {
+  margin-bottom: 15px;
+}
+
+.calculator-label {
+  display: block;
+  font-size: 1em;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.calculator-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.calculator-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #007BFF;
+  color: #fff;
+  font-size: 1.1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calculator-btn:hover {
+  background-color: #0056b3;
+}
+
+.calculator-result {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e9ffe9;
+  border: 1px solid #d4ffd4;
+  border-radius: 4px;
+}
+
+#roi-output {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #4CAF50;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .calculator-section {
+      padding: 15px;
+  }
+
+  .calculator-title {
+      font-size: 1.5em;
+  }
+
+  .calculator-input {
+      font-size: 0.9em;
+  }
+
+  .calculator-btn {
+      font-size: 1em;
+  }
+
+  #roi-output {
+      font-size: 1em;
+  }
+}
+
+
+
+/* Modal Base Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Hide Modal By Default */
+.modal.hidden {
+  display: none;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: white;
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+/* Transaction Details */
+.transaction-details p {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+/* Modal Buttons */
+.modal-actions {
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-actions .btn-ref {
+  background-color: #f44336; /* Red */
+  color: white;
+  margin-right: 10px;
+}
+
+.modal-actions .btn-green {
+  background-color: #4CAF50; /* Green */
+  color: white;
+}
+
+
+/* css styling for numeric keyboard */
+
+/* Custom Card Container */
+.custom-card {
+  font-family: 'Arial', sans-serif;
+  background-color: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  margin: 50px auto; /* Center the card on the page */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;  /* This allows it to overlap other elements */
+  top: 0;  /* Adjust to the desired position */
+  left: 0;
+  right: 0;
+  z-index: 10;  /* Higher z-index makes sure it appears on top */
+  display: none;  /* Initially hidden */
+}
+
+/* Title Styling */
+.custom-title {
+  font-size: 24px;
+  color: #222;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+/* PIN Input Field */
+.pin-container {
+  margin-bottom: 25px;
+}
+
+.pin-field {
+  font-size: 32px;
+  letter-spacing: 10px;
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #f4f4f4;
+  text-align: center;
+  color: #333;
+  cursor: not-allowed;
+}
+
+.pin-field:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Keyboard Layout */
+.custom-keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+/* Keyboard Key Styling */
+.keyboard-key {
+  font-size: 18px;
+  padding: 18px;
+  border-radius: 8px;
+  background-color: #eef1f5;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  color: #444;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.keyboard-key:hover {
+  background-color: #e1e6ea;
+  transform: scale(1.05);
+}
+
+.keyboard-key:active {
+  background-color: #d0d4d8;
+  transform: scale(0.98);
+}
+
+/* Cancel Key Styling */
+.cancel-key {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.cancel-key:hover {
+  background-color: #ff4949;
+}
+
+.cancel-key:active {
+  background-color: #e63939;
+}
+
+/* Help Key Styling */
+.help-key {
+  background-color: #f39c12;
+  color: white;
+}
+
+.help-key:hover {
+  background-color: #e67e22;
+}
+
+.help-key:active {
+  background-color: #d35400;
+}
+
+/* Submit Key Styling */
+.submit-key {
+  background-color: #4caf50;
+  color: white;
+  grid-column: span 3; /* Span across all three columns */
+}
+
+.submit-key:hover {
+  background-color: #45a049;
+}
+
+.submit-key:active {
+  background-color: #3c8d40;
+}
