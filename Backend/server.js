@@ -57,36 +57,6 @@ mongoose.connect(db).then(() => {
     console.error('MongoDB connection error:', err);
 });
 
-//seeding the database with admin credentials
-const seedAdmin = async () => {
-    try {
-        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-        const admin = new Admin({
-            fullName: process.env.ADMIN_NAME,
-            email: process.env.ADMIN_EMAIL,
-            username: process.env.ADMIN_USERNAME,
-            password: hashedPassword,
-            role: 'General_admin',
-            permissions: {
-                canManageUsers: true,
-                canSendEmails: true,
-                canManageHoldings: true,
-                canGeneratePins: true,
-                canAddDigitalWallets: true,
-                canAddBankTransfer: true,
-                canAddCrypto: true,
-                canManageSubadmins: true
-            },
-            status: 'Active',
-        });
-        await admin.save();
-        console.log('Admin seeded successfully');
-    } catch (error) {
-        console.error('Error seeding admin:', error);
-    }
-};
-seedAdmin(); 
-
 
 // Middleware to authenticate JWT tokens for users
 // This middleware checks if the JWT token is valid and attaches the user info to the request object
@@ -178,7 +148,7 @@ const pinSchema = new mongoose.Schema({
 
 
 const Pin = mongoose.model('Pin', pinSchema);
- 
+
 // Fetch Bank Transfer Data
 app.get('/admin/deposit/bank-transfer', authenticateJWT, async (req, res) => {
   try {
@@ -648,13 +618,14 @@ const adminSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 })
+
 // middleware to update the updatedAt field on every save
 adminSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 })
 const Admin = mongoose.model('Admin', adminSchema);
- 
+
 
 // Auth middleware
 const authenticateToken = (req, res, next) => {
@@ -675,6 +646,56 @@ app.get('/admin/verify-token', authenticateToken, (req, res) => {
 }
 );
 
+// seeding the database with admin credentials
+const seedAdmin = async () => {
+    try {
+        // Check if admin already exists
+        const existingAdmin = await Admin.findOne({
+            $or: [
+                { email: process.env.ADMIN_EMAIL },
+                { username: process.env.ADMIN_USERNAME }
+            ]
+        });
+
+        if (existingAdmin) {
+            console.log('Admin already exists in database');
+            return;
+        }
+
+        // Only create new admin if one doesn't exist
+        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+        const admin = new Admin({
+            fullName: process.env.ADMIN_NAME,
+            email: process.env.ADMIN_EMAIL,
+            username: process.env.ADMIN_USERNAME,
+            password: hashedPassword,
+            role: 'General_admin',
+            permissions: {
+                canManageUsers: true,
+                canSendEmails: true,
+                canManageHoldings: true,
+                canGeneratePins: true,
+                canAddDigitalWallets: true,
+                canAddBankTransfer: true,
+                canAddCrypto: true,
+                canManageSubadmins: true
+            },
+            status: 'Active',
+        });
+
+        await admin.save();
+        console.log('Admin seeded successfully');
+    } catch (error) {
+        console.error('Error seeding admin:', error);
+    }
+};
+
+// Only seed admin if not in production or explicitly needed
+if (process.env.NODE_ENV !== 'production') {
+    seedAdmin();
+}
+
+ 
 
 // Role permission checker
 const authorize = (permission) => {
@@ -687,37 +708,71 @@ const authorize = (permission) => {
   };
 };
 
-
+//admin login route
 app.post('/old/admin/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
   console.log("Received admin login request:", req.body);
 
   try {
-      // Validate credentials against environment variables
-      if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-          
-          // Create JWT token
-          const token = jwt.sign(
-              { username }, // Payload
-              process.env.JWT_SECRET, // Secret key
-              { expiresIn: '2h' } // Options
-          );
+      // Find admin by username or email
+      const admin = await Admin.findOne({
+          $or: [
+              { username: username || '' }, 
+              { email: email || '' }
+          ]
+      });
 
-          console.log("Admin login successful, token generated");
-
-          // Send the token in the response
-          return res.status(200).json({ token });
-      } else {
-          console.log("Invalid admin credentials");
-          return res.status(401).json({ message: 'Invalid username or password' });
+      // If admin not found
+      if (!admin) {
+          console.log("Admin account not found");
+          return res.status(404).json({ message: 'Account not found. Please check your credentials.' });
       }
+
+      // Check if account is active
+      if (admin.status !== 'Active') {
+          console.log("Admin account is not active");
+          return res.status(403).json({ message: 'Your account is not active. Please contact support.' });
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, admin.password);
+      if (!isPasswordValid) {
+          console.log("Invalid password");
+          return res.status(401).json({ message: 'Incorrect password' });
+      }
+
+      // Update last login
+      admin.LastLogin = new Date();
+      await admin.save();
+
+      // Create JWT token
+      const token = jwt.sign(
+          { 
+              id: admin._id,
+              username: admin.username,
+              email: admin.email,
+              role: admin.role 
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '2h' }
+      );
+
+      console.log("Admin login successful, token generated");
+      return res.status(200).json({ 
+          token,
+          user: {
+              id: admin._id,
+              fullName: admin.fullName,
+              email: admin.email,
+              role: admin.role
+          }
+      });
   } catch (error) {
       console.error("Error during admin login:", error);
       return res.status(500).json({ message: 'Server error' });
   }
 });
-
 
 //Route to generate pin
 const SALT_ROUNDS = 10; // Adjust the salt rounds for encryption strength
