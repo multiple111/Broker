@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         :root {
             --primary-color: #0046A8;
@@ -11,7 +13,8 @@
             --bg-color: #f4f4f9;
             --card-bg-color: #ffffff;
             --shadow-color: rgba(0, 0, 0, 0.2);
-            --error-color: red;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
         }
 
         * {
@@ -21,7 +24,7 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             display: flex;
             justify-content: center;
@@ -33,17 +36,19 @@
         .login-container {
             background-color: var(--card-bg-color);
             border-radius: 12px;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(0, 70, 168, 0.1);
+            max-width: 420px;
             width: 100%;
-            padding: 40px 30px;
+            padding: 40px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         h1 {
             color: var(--primary-color);
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             font-size: 1.8rem;
+            font-weight: 600;
         }
 
         .form-group {
@@ -53,63 +58,120 @@
 
         label {
             display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #333;
         }
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             outline: none;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
         }
 
         input:focus {
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 70, 168, 0.1);
+            background-color: #fff;
         }
 
         button {
             background-color: var(--primary-color);
             color: #ffffff;
             font-size: 1rem;
-            padding: 12px 20px;
+            font-weight: 600;
+            padding: 14px 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            margin-top: 10px;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: var(--primary-color-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .error-message {
             color: var(--error-color);
             font-size: 0.9rem;
             margin-top: 10px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .toggle-method {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            display: inline-block;
+            transition: all 0.2s ease;
+            background: none;
+            border: none;
+            font-weight: 500;
+        }
+
+        .toggle-method:hover {
+            text-decoration: underline;
+            color: var(--primary-color-hover);
+        }
+
+        .hidden {
+            display: none;
         }
 
         @media (max-width: 500px) {
             body {
-                padding: 10px;
+                padding: 15px;
             }
 
             .login-container {
-                padding: 30px 20px;
+                padding: 30px;
             }
 
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.6rem;
+                margin-bottom: 25px;
             }
 
-            button {
-                font-size: 0.9rem;
-                padding: 10px;
+            input, button {
+                padding: 12px;
             }
         }
     </style>
@@ -118,58 +180,199 @@
     <div class="login-container">
         <h1>Admin Login</h1>
         <form id="adminLoginForm">
-            <div class="form-group">
+            <div class="form-group" id="usernameGroup">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username">
+            </div>
+            <div class="form-group hidden" id="emailGroup">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
             </div>
-            <button type="submit">Login</button>
+            
+            <button type="button" class="toggle-method" id="toggleMethod">
+                Or login with email instead
+            </button>
+            
+            <button type="submit" id="loginButton">
+                <span id="buttonText">Login</span>
+                <div id="spinner" class="spinner" style="display: none;"></div>
+            </button>
+            
             <p class="error-message" id="errorMessage"></p>
         </form>
     </div>
+
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="apiConfig.js"></script>
     <script>
-        const form = document.getElementById('adminLoginForm');
-        const errorMessage = document.getElementById('errorMessage');
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('adminLoginForm');
+            const errorMessage = document.getElementById('errorMessage');
+            const loginButton = document.getElementById('loginButton');
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('spinner');
+            const toggleMethod = document.getElementById('toggleMethod');
+            const usernameGroup = document.getElementById('usernameGroup');
+            const emailGroup = document.getElementById('emailGroup');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorMessage.textContent = '';  // Clear previous messages
+            // Set focus to username field by default
+            usernameInput.focus();
 
-            const formData = new FormData(form);
-            const data = {
-                username: formData.get('username'),
-                password: formData.get('password')
-            };
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/old/admin/login`, {   
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    const token = result.token;  // Get the token from the response
-
-                    // Store the token in localStorage
-                    localStorage.setItem('authToken', token);
-
-                    // Redirect to the admin dashboard
-                    window.location.href = 'admin-first-zip.html';
+            // Toggle between username and email login
+            toggleMethod.addEventListener('click', function() {
+                const isEmailVisible = !emailGroup.classList.contains('hidden');
+                
+                if (isEmailVisible) {
+                    // Switch to username
+                    emailGroup.classList.add('hidden');
+                    usernameGroup.classList.remove('hidden');
+                    toggleMethod.textContent = 'Or login with email instead';
+                    emailInput.value = '';
+                    usernameInput.focus();
                 } else {
-                    const error = await response.json();
-                    errorMessage.textContent = error.message || 'Invalid login credentials.';
+                    // Switch to email
+                    usernameGroup.classList.add('hidden');
+                    emailGroup.classList.remove('hidden');
+                    toggleMethod.textContent = 'Or login with username instead';
+                    usernameInput.value = '';
+                    emailInput.focus();
                 }
-            } catch (err) {
-                errorMessage.textContent = 'Something went wrong. Please try again later.';
+            });
+
+            // Form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                errorMessage.textContent = '';
+                loginButton.disabled = true;
+                buttonText.textContent = 'Authenticating...';
+                spinner.style.display = 'block';
+
+                const formData = new FormData(form);
+                const data = {
+                    password: formData.get('password')
+                };
+
+                // Add either username or email based on which is visible
+                const isEmailVisible = !emailGroup.classList.contains('hidden');
+                const identifier = isEmailVisible ? formData.get('email') : formData.get('username');
+                
+                if (!identifier) {
+                    showError(isEmailVisible ? 'Please enter your email' : 'Please enter your username');
+                    return;
+                }
+
+                if (isEmailVisible) {
+                    data.email = identifier;
+                } else {
+                    data.username = identifier;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/old/admin/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const responseData = await response.json();
+
+                    if (response.ok) {
+                        // Successful login
+                        localStorage.setItem('authToken', responseData.token);
+                        localStorage.setItem('adminData', JSON.stringify(responseData.user));
+
+                        await Swal.fire({
+                            title: 'Login Successful!',
+                            html: `Welcome back, <b>${responseData.user.fullName || responseData.user.username}</b>!`,
+                            icon: 'success',
+                            confirmButtonColor: '#0046A8',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            background: '#ffffff',
+                            color: '#333'
+                        });
+
+                        window.location.href = 'admin-first-zip.html';
+                    } else {
+                        // Handle different error cases
+                        let errorTitle, errorMsg;
+                        
+                        switch(response.status) {
+                            case 400:
+                                errorTitle = 'Validation Error';
+                                errorMsg = responseData.message || 'Please check your input and try again.';
+                                break;
+                            case 401:
+                                errorTitle = 'Incorrect Password';
+                                errorMsg = 'The password you entered is incorrect. Please try again.';
+                                break;
+                            case 403:
+                                errorTitle = 'Account Inactive';
+                                errorMsg = 'Your account is not active. Please contact support.';
+                                break;
+                            case 404:
+                                errorTitle = 'Account Not Found';
+                                errorMsg = isEmailVisible 
+                                    ? 'No account found with this email address.' 
+                                    : 'No account found with this username.';
+                                break;
+                            default:
+                                errorTitle = 'Login Failed';
+                                errorMsg = responseData.message || 'An unexpected error occurred. Please try again.';
+                        }
+
+                        await Swal.fire({
+                            title: errorTitle,
+                            text: errorMsg,
+                            icon: 'error',
+                            confirmButtonColor: '#0046A8',
+                            background: '#ffffff',
+                            color: '#333'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    await Swal.fire({
+                        title: 'Connection Error',
+                        text: 'Unable to connect to the server. Please check your internet connection and try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#0046A8',
+                        background: '#ffffff',
+                        color: '#333'
+                    });
+                } finally {
+                    resetLoadingState();
+                }
+            });
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.opacity = 0;
+                setTimeout(() => {
+                    errorMessage.style.opacity = 1;
+                }, 10);
+                resetLoadingState();
             }
+
+            function resetLoadingState() {
+                loginButton.disabled = false;
+                buttonText.textContent = 'Login';
+                spinner.style.display = 'none';
+            }
+
+            // Add animation to error message
+            errorMessage.style.transition = 'opacity 0.3s ease';
         });
     </script>
 </body>
