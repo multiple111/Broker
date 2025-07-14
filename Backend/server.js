@@ -16,13 +16,13 @@ const cron = require('node-cron');
 const app = express();
 
 
-// Serve static files from the frontend folder
-app.use(express.static(path.join(__dirname, '../frontend')));
+// // Serve static files from the frontend folder for development
+// app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Route to serve home.html for the homepage
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
+// // Route to serve home.html for the homepage for development
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../frontend/index.html'));
+// });
 
 
 // Middleware
@@ -59,7 +59,6 @@ mongoose.connect(db).then(() => {
 
 
 // Middleware to authenticate JWT tokens for users
-// This middleware checks if the JWT token is valid and attaches the user info to the request object
 const authenticateJWT = (req, res, next) => {
     console.log('Authenticating JWT...');
     
@@ -893,19 +892,170 @@ app.post('/verify-pin', async (req, res) => {
     console.error('Error verifying PIN:', error);
     return res.status(500).json({ message: 'Server error. Please try again later.' });
   }
-});6
+});
 
 // Route to delete all pins
 app.delete('/admin/pins', authenticateJWT, async (req, res) => {
   try {
-      await Pin.deleteMany({}); // Delete all pins from the database
+      await Pin.deleteMany({});  
       res.status(200).json({ message: 'All pins have been successfully deleted.' });
   } catch (error) {
       console.error('Error deleting pins:', error);
       res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Transaction Model
+const transactionSchema = new mongoose.Schema({
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User',
+        required: true 
+    },
+    type: {
+        type: String,
+        required: true,
+        enum: ['deposit', 'withdrawal', 'transfer']
+    },
+    amount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    method: {
+        type: String,
+        enum: ['crypto', 'bank', 'digital-wallet', 'other']
+    },
+    status: {
+        type: String,
+        default: 'pending',
+        enum: ['pending', 'completed', 'failed', 'cancelled']
+    },
+    details: {
+        type: Object
+    }
+}, { timestamps: true });
+
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
+// Process Withdrawal
+app.post('/process-withdrawal', authenticateJWT, async (req, res) => {
+    const { pin, method, amount, details } = req.body;
+    const userId = req.user.id;
+
+    // Validate input
+    if (!pin || !method || !amount || !details) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    try {
+        // Verify PIN
+        const pinRecord = await Pin.findOne({});
+        const isPinValid = pinRecord && await bcrypt.compare(pin, pinRecord.pinCode);
+        
+        if (!isPinValid) {
+            return res.status(400).json({ message: 'Invalid PIN' });
+        }
+        if (pinRecord.expirationAt < new Date() || pinRecord.status === 'expired') {
+            return res.status(400).json({ message: 'PIN expired' });
+        }
+
+        // Get user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check sufficient funds
+        if (user.totalBalance < amount) {
+            return res.status(400).json({ message: 'Insufficient funds' });
+        }
+
+        // Process crypto withdrawal
+        if (method === 'crypto') {
+            const cryptoHolding = user.holdings.find(h => 
+                h.symbol === details.type.toUpperCase() || 
+                h.name.toLowerCase() === details.type.toLowerCase()
+            );
+
+            if (!cryptoHolding || cryptoHolding.amount < amount) {
+                return res.status(400).json({ 
+                    message: `Insufficient ${details.type} holdings`
+                });
+            }
+
+            // Deduct from crypto holding
+            cryptoHolding.amount -= amount;
+            if (cryptoHolding.amount <= 0) {
+                user.holdings = user.holdings.filter(h => h._id !== cryptoHolding._id);
+            }
+        }
+
+        // Deduct from total balance
+        user.totalBalance -= amount;
+
+        // Create transaction record
+        const transaction = new Transaction({
+            userId,
+            type: 'withdrawal',
+            amount,
+            method,
+            status: 'completed',
+            details
+        });
+
+        // Save changes
+        await user.save();
+        await transaction.save();
+
+        res.status(200).json({
+            message: 'Withdrawal processed successfully',
+            newBalance: user.totalBalance,
+            updatedHoldings: user.holdings
+        });
+
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        res.status(500).json({ message: 'Error processing withdrawal' });
+    }
+});
  
+// Get user transaction history
+app.get('/transactions', authenticateJWT, async (req, res) => {
+    try {
+        const { type, time } = req.query;
+        const userId = req.user.id;
+
+        const query = { userId };
+        
+        // Type filter
+        if (type && ['withdrawal', 'deposit'].includes(type)) {
+            query.type = type;
+        }
+        
+        // Time filter
+        let dateFilter = {};
+        if (time === 'week') {
+            dateFilter = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+        } else if (time === 'month') {
+            dateFilter = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
+        }
+        
+        if (Object.keys(dateFilter).length > 0) {
+            query.createdAt = dateFilter;
+        }
+        
+        const transactions = await Transaction.find(query)
+            .sort({ createdAt: -1 })
+            .limit(50);
+        
+        res.status(200).json(transactions);
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        res.status(500).json({ message: 'Error fetching transaction history' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
