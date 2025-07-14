@@ -481,202 +481,252 @@ document.getElementById('roi-calculator-form').addEventListener('submit', functi
 });
 
 
-//Working on the Modal
+//Withdrawal function integration
 
-// Add event listeners
 document.addEventListener("DOMContentLoaded", () => {
+    // Existing DOM elements
     const withdrawButtons = document.querySelectorAll(".withdrawal-submit");
     const modal = document.getElementById("transaction-summary-modal");
     const cancelBtn = document.getElementById("cancel-transaction");
     const confirmBtn = document.getElementById("confirm-transaction");
-
-    // Modal elements to populate
     const summaryAmount = document.getElementById("summary-amount");
     const summaryMethod = document.getElementById("summary-method");
     const summaryInfo = document.getElementById("summary-info");
-
-    // Withdrawal forms
     const cryptoForm = document.querySelector("#crypto-method form");
     const bankForm = document.querySelector("#bank-method form");
+    const verificationSection = document.querySelector('.custom-card');
+    const processingModal = document.getElementById("withdrawal-processing-modal");
 
-    // PIN input section
-    const verificationSection = document.querySelector('.custom-card');  // PIN verification section
+    // Store current withdrawal data
+    let currentWithdrawal = {
+        method: null,
+        amount: 0,
+        details: {}
+    };
 
-    // Show Modal with Dynamic Content
+    // Withdrawal button handler
     withdrawButtons.forEach((button) => {
         button.addEventListener("click", (event) => {
-            event.preventDefault(); // Prevent form submission
-
-            // Determine withdrawal method
-            const method = button.closest(".withdrawal-method").id.includes("crypto")
-                ? "Crypto Withdrawal"
-                : "Bank Withdrawal";
-
-            // Extract data based on method
-            if (method === "Crypto Withdrawal") {
-                const amount = cryptoForm.querySelector("#crypto-amount").value || "0.00";
-                const wallet = cryptoForm.querySelector("#crypto-wallet").value || "N/A";
-                const type = cryptoForm.querySelector("#crypto-type").value || "N/A";
-
-                summaryAmount.textContent = `$${parseFloat(amount).toFixed(2)}`;
-                summaryMethod.textContent = method;
-                summaryInfo.textContent = `Wallet Address: ${wallet}, Crypto Type: ${type}`;
-            } else if (method === "Bank Withdrawal") {
-                const amount = bankForm.querySelector("#bank-amount").value || "0.00";
-                const bankName = bankForm.querySelector("#bank-name").value || "N/A";
-                const accountNumber = bankForm.querySelector("#account-number").value || "N/A";
-
-                summaryAmount.textContent = `$${parseFloat(amount).toFixed(2)}`;
-                summaryMethod.textContent = method;
-                summaryInfo.textContent = `Bank: ${bankName}, Account: ${accountNumber}`;
+            event.preventDefault();
+            
+            const isCrypto = button.closest(".withdrawal-method").id.includes("crypto");
+            currentWithdrawal.method = isCrypto ? "crypto" : "bank";
+            
+            if (isCrypto) {
+                currentWithdrawal.amount = parseFloat(cryptoForm.querySelector("#crypto-amount").value);
+                currentWithdrawal.details = {
+                    wallet: cryptoForm.querySelector("#crypto-wallet").value,
+                    type: cryptoForm.querySelector("#crypto-type").value
+                };
+                
+                summaryAmount.textContent = `$${currentWithdrawal.amount.toFixed(2)}`;
+                summaryMethod.textContent = "Crypto Withdrawal";
+                summaryInfo.textContent = `Wallet: ${currentWithdrawal.details.wallet}, Type: ${currentWithdrawal.details.type}`;
+            } else {
+                currentWithdrawal.amount = parseFloat(bankForm.querySelector("#bank-amount").value);
+                currentWithdrawal.details = {
+                    bankName: bankForm.querySelector("#bank-name").value,
+                    accountNumber: bankForm.querySelector("#account-number").value,
+                    routingNumber: bankForm.querySelector("#routing-number").value
+                };
+                
+                summaryAmount.textContent = `$${currentWithdrawal.amount.toFixed(2)}`;
+                summaryMethod.textContent = "Bank Withdrawal";
+                summaryInfo.textContent = `Bank: ${currentWithdrawal.details.bankName}, Account: ${currentWithdrawal.details.accountNumber}`;
             }
-
-            // Show the modal
+            
             modal.classList.remove("hidden");
         });
     });
 
-    // Hide Modal on Cancel
-    cancelBtn.addEventListener("click", () => {
-        modal.classList.add("hidden");
-    });
-
-    // Show the verification section and hide the modal on Confirm
+    // Confirm transaction handler
     confirmBtn.addEventListener("click", () => {
-        // Hide the modal
         modal.classList.add("hidden");
-
-        // Show the verification PIN section
-        verificationSection.style.display = 'block';  // This will remove the display: none from the PIN input section
-
-        // Optionally, hide the continue button in the modal after confirming
-        confirmBtn.style.display = 'none';
+        verificationSection.style.display = 'block';
     });
-});
 
-
-// Js functionality for Pin verification
-
-function loadScript(url) {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
-        document.head.append(script);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', async function () {
-    // Load SweetAlert2
-    try {
-        await loadScript("https://cdn.jsdelivr.net/npm/sweetalert2@11");
-
-        // Elements
-        const pinInput = document.getElementById('custom-pin');
-        const keyboardKeys = document.querySelectorAll('.keyboard-key');
-
-        // Backend API URL
-        const verifyPinEndpoint = `${API_BASE_URL}/verify-pin`;
-
-        // Helper to handle PIN input
-        function updatePinInput(keyValue) {
+    // PIN Verification Logic
+    const pinInput = document.getElementById('custom-pin');
+    const keyboardKeys = document.querySelectorAll('.keyboard-key');
+    
+    keyboardKeys.forEach((key) => {
+        key.addEventListener('click', function() {
+            const keyValue = this.getAttribute('data-key');
+            
             if (keyValue === 'clear') {
-                pinInput.value = ''; // Clear the input
+                pinInput.value = '';
             } else if (keyValue === 'submit') {
                 if (pinInput.value.length === 4 || pinInput.value.length === 6) {
-                    verifyPin(pinInput.value); // Verify PIN if valid length
+                    processWithdrawal(pinInput.value);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid PIN',
-                        text: 'Please enter a valid 4 or 6-digit PIN.',
-                    });
+                    Swal.fire('Error', 'PIN must be 4 or 6 digits', 'error');
                 }
             } else if (pinInput.value.length < 6) {
-                pinInput.value += keyValue; // Add digit to the PIN input
+                pinInput.value += keyValue;
             }
-        }
-
-        // Verify PIN with the backend
-        async function verifyPin(pin) {
-            try {
-                const response = await fetch(verifyPinEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ pin }),
-                });
-
-                const result = await response.json();
-
-                if (response.status === 200) {
-                    // Show success alert
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Transaction Approved!',
-                        text: 'The money is on its way to your bank.',
-                        showCancelButton: true, // Enable cancel button
-                        confirmButtonText: 'Stay Here', // Custom text for confirm button
-                        cancelButtonText: 'Close', // Custom text for cancel button
-                        confirmButtonColor: '#3085d6', // Button color for confirm
-                        cancelButtonColor: '#d33', // Button color for cancel
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // If user clicks "Stay Here", no action is taken
-                            console.log("User chose to stay here");
-                        } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            // If user clicks "Close", hide PIN verification and show portfolio
-                            document.querySelector('.custom-card').style.display = 'none'; // Hide the PIN verification section
-                            document.getElementById('portfolio-section').style.display = 'block'; // Show portfolio section
-
-                            // Optionally, reset or clear the PIN input
-                            const pinInput = document.getElementById('custom-pin');
-                            pinInput.value = ''; // Clear the PIN input
-
-                            // Optionally, scroll to portfolio section
-                            window.location.hash = '#portfolio'; // Scroll to portfolio section
-                        }
-                    });
-                } else if (response.status === 404) {
-                    // PIN expired error
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'PIN Expired',
-                        text: 'Please request a new PIN.',
-                    });
-                } else {
-                    // Invalid PIN error
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid PIN',
-                        text: 'The PIN entered is incorrect. Please try again.',
-                    });
-                }
-            } catch (error) {
-                console.error('Error verifying PIN:', error);
-                // Error occurred while verifying PIN
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error Verifying PIN',
-                    text: 'An error occurred while verifying the PIN. Please try again later.',
-                });
-            }
-        }
-
-
-
-        // Add click event listeners to all keys
-        keyboardKeys.forEach((key) => {
-            key.addEventListener('click', function () {
-                const keyValue = this.getAttribute('data-key');
-                updatePinInput(keyValue);
-            });
         });
+    });
 
-    } catch (error) {
-        console.error('Failed to load SweetAlert2:', error);
-        alert("Failed to load SweetAlert2");
+    // Process Withdrawal Function
+    async function processWithdrawal(pin) {
+        processingModal.classList.remove("hidden");
+        verificationSection.style.display = 'none';
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/process-withdrawal`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({
+                    pin,
+                    ...currentWithdrawal
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Withdrawal Successful!',
+                    html: `<p>$${currentWithdrawal.amount.toFixed(2)} has been processed.</p>`,
+                    confirmButtonText: 'Done'
+                });
+                
+                // Reset forms and update UI
+                resetForms();
+                updateUserBalance(result.newBalance);
+                updateHoldings(result.updatedHoldings);
+            } else {
+                throw new Error(result.message || 'Withdrawal failed');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            processingModal.classList.add("hidden");
+            pinInput.value = '';
+            currentWithdrawal = { method: null, amount: 0, details: {} };
+        }
+    }
+
+    // Helper functions
+    function resetForms() {
+        cryptoForm.reset();
+        bankForm.reset();
+    }
+    
+    function updateUserBalance(newBalance) {
+        const balanceElement = document.getElementById('user-balance');
+        if (balanceElement) {
+            balanceElement.textContent = newBalance.toFixed(2);
+        }
+    }
+    
+    function updateHoldings(holdings) {
+        console.log('Holdings updated:', holdings);
     }
 });
+
+// Add this to your existing JavaScript
+document.addEventListener("DOMContentLoaded", () => {
+    const transactionsSection = document.getElementById('transactions');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'style') {
+                const displayStyle = transactionsSection.style.display;
+                if (displayStyle === 'block' || displayStyle === '') {
+                    loadTransactions();
+                }
+            }
+        });
+    });
+    
+    observer.observe(transactionsSection, { attributes: true });
+    
+    // Filter event listeners
+    document.getElementById('transaction-type-filter').addEventListener('change', loadTransactions);
+    document.getElementById('transaction-time-filter').addEventListener('change', loadTransactions);
+});
+
+async function loadTransactions() {
+    const transactionsList = document.getElementById('transactions-list');
+    const typeFilter = document.getElementById('transaction-type-filter').value;
+    const timeFilter = document.getElementById('transaction-time-filter').value;
+    
+    // Show loading state
+    transactionsList.innerHTML = `
+        <div class="loading-transactions">
+            <div class="spinner"></div>
+            <p>Loading transactions...</p>
+        </div>
+    `;
+    
+    try {
+        // Build query params
+        const params = new URLSearchParams();
+        if (typeFilter !== 'all') params.append('type', typeFilter);
+        if (timeFilter !== 'all') params.append('time', timeFilter);
+        
+        const response = await fetch(`${API_BASE_URL}/transactions?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load transactions');
+        
+        const transactions = await response.json();
+        
+        if (transactions.length === 0) {
+            transactionsList.innerHTML = `
+                <div class="no-transactions">
+                    <p>No transactions found</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Render transactions
+        transactionsList.innerHTML = transactions.map(transaction => `
+            <div class="transaction-item">
+                <div class="transaction-details">
+                    <div class="transaction-type ${transaction.type}">
+                        ${transaction.type === 'withdrawal' ? '↓ Withdrawal' : '↑ Deposit'}
+                        <span class="transaction-status status-${transaction.status}">
+                            ${transaction.status}
+                        </span>
+                    </div>
+                    <div class="transaction-method">
+                        ${transaction.method ? formatMethod(transaction.method) : ''}
+                        ${transaction.details?.type ? `(${transaction.details.type})` : ''}
+                    </div>
+                    <div class="transaction-date">
+                        ${new Date(transaction.createdAt).toLocaleString()}
+                    </div>
+                </div>
+                <div class="transaction-amount">
+                    ${transaction.type === 'withdrawal' ? '-' : '+'}$${transaction.amount.toFixed(2)}
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+        transactionsList.innerHTML = `
+            <div class="no-transactions">
+                <p>Error loading transactions. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+function formatMethod(method) {
+    const methodMap = {
+        'crypto': 'Crypto',
+        'bank': 'Bank Transfer',
+        'digital-wallet': 'Digital Wallet'
+    };
+    return methodMap[method] || method;
+}
