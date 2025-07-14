@@ -871,3 +871,10 @@ button:hover {
     flex-direction: column;
   }
 }
+
+#total-balance[readonly] {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    color: #333;
+    cursor: not-allowed;
+}

@@ -241,10 +241,45 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// First, ensure SweetAlert is loaded
+if (typeof Swal === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+    document.head.appendChild(script);
+    
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css';
+    document.head.appendChild(link);
+}
+
+// Helper function for notifications
+function showToast(type, message) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: type,
+            title: message,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            background: '#ffffff',
+            backdrop: false
+        });
+    } else {
+        alert(`${type}: ${message}`);
+    }
+}
+
 // Fetch Holdings and Display
 document.getElementById('search-btn').addEventListener('click', async () => {
-    const uid = document.getElementById('uid-search').value;
-    console.log("Fetching holdings for UID:", uid);
+    const uid = document.getElementById('uid-search').value.trim();
+    
+    if (!uid) {
+        showToast('error', 'Please enter a UID');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/admin/user-holdings/${uid}`, {
@@ -254,40 +289,62 @@ document.getElementById('search-btn').addEventListener('click', async () => {
             }
         });
 
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-        const data = await response.json();
-        console.log('Data from backend:', data);
-
-        const holdingsList = document.getElementById('holdings-list');
-        holdingsList.innerHTML = ""; // Clear previous content
-
-        if (data.holdings && data.holdings.length === 0) {
-            holdingsList.innerHTML = "<p>No holdings found for this user.</p>";
-        } else {
-            data.holdings.forEach(holding => {
-                const holdingElement = document.createElement('div');
-                holdingElement.textContent = `${holding.name} (${holding.symbol}): ${holding.amount} units worth $${holding.value}`;
-                holdingsList.appendChild(holdingElement);
-            });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `Error: ${response.status}`);
         }
 
-        // Update total balance display as sum of amounts
-        const totalAmount = data.holdings.reduce((total, holding) => total + holding.amount, 0);
-        document.getElementById('total-balance').value = totalAmount;
+        const data = await response.json();
+        console.log('API Response:', data); // Debug log
+        
+        // Update user info display
+        document.getElementById('user-name').textContent = data.fullName || '-';
+        document.getElementById('user-username').textContent = data.username || '-';
+        document.getElementById('user-email').textContent = data.email || '-';
+        
+        // Update total balance display - ensure you're using the correct property name
+        const balanceDisplay = document.getElementById('total-balance');
+        balanceDisplay.value = data.totalBalance || 0;
+        console.log('Balance being set:', data.totalBalance); // Debug log
+        
+        // Update holdings list
+        const holdingsList = document.getElementById('holdings-list');
+        holdingsList.innerHTML = data.holdings && data.holdings.length > 0 
+            ? data.holdings.map(holding => 
+                `${holding.name} (${holding.symbol}): ${holding.amount} units worth $${holding.value}`
+              ).join('<br>')
+            : "<p>No holdings found for this user.</p>";
 
     } catch (error) {
-        console.error("Error fetching holdings:", error);
+        console.error("Error fetching user data:", error);
+        showToast('error', error.message || 'Failed to fetch user data');
+        
+        // Clear all fields on error
+        document.getElementById('user-name').textContent = '-';
+        document.getElementById('user-username').textContent = '-';
+        document.getElementById('user-email').textContent = '-';
+        document.getElementById('total-balance').value = '';
+        document.getElementById('holdings-list').innerHTML = '<p>No holdings data available</p>';
     }
 });
 
 // Add New Holding and Update Total Amount
 document.getElementById('add-holding-btn').addEventListener('click', async () => {
-    const uid = document.getElementById('uid-search').value;
-    const name = document.getElementById('holding-name').value;
-    const symbol = document.getElementById('holding-symbol').value;
+    const uid = document.getElementById('uid-search').value.trim();
+    const name = document.getElementById('holding-name').value.trim();
+    const symbol = document.getElementById('holding-symbol').value.trim();
     const amount = parseFloat(document.getElementById('holding-amount').value);
     const value = parseFloat(document.getElementById('holding-value').value);
+
+    if (!uid) {
+        showToast('error', 'Please search for a user first');
+        return;
+    }
+
+    if (!name || !symbol || isNaN(amount) || isNaN(value)) {
+        showToast('error', 'Please fill all holding fields with valid values');
+        return;
+    }
 
     try {
         // Add new holding
@@ -300,70 +357,33 @@ document.getElementById('add-holding-btn').addEventListener('click', async () =>
             body: JSON.stringify({ uid, name, symbol, amount, value })
         });
 
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || `Error: ${response.statusText}`);
+        }
 
-        console.log("Holding added successfully");
-
-        // Fetch updated holdings to recalculate total amount
-        const updatedHoldingsResponse = await fetch(`${API_BASE_URL}/admin/user-holdings/${uid}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-
-        const updatedData = await updatedHoldingsResponse.json();
-
-        // Calculate the new total amount
-        const totalAmount = updatedData.holdings.reduce((total, holding) => total + holding.amount, 0);
-
-        await fetch(`${API_BASE_URL}/admin/user-balance/${uid}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            },
-            body: JSON.stringify({ totalBalance: totalAmount })
-        });
-
-        console.log("Total amount updated:", totalAmount);
-
-        document.getElementById('total-balance').value = totalAmount;
+        const result = await response.json();
+        
+        // Update holdings list
+        const holdingsList = document.getElementById('holdings-list');
+        holdingsList.innerHTML = result.holdings.map(holding => 
+            `${holding.name} (${holding.symbol}): ${holding.amount} units worth $${holding.value}`
+        ).join('<br>');
+        
+        // Clear form
+        document.getElementById('holding-name').value = '';
+        document.getElementById('holding-symbol').value = '';
+        document.getElementById('holding-amount').value = '';
+        document.getElementById('holding-value').value = '';
+        
+        showToast('success', 'Holding added successfully');
 
     } catch (error) {
-        console.error("Error updating holdings or balance:", error);
+        console.error("Error adding holding:", error);
+        showToast('error', error.message || 'Failed to add holding');
     }
 });
 
-
-// Event listener for updating total balance from input
-document.getElementById('update-balance-btn').addEventListener('click', async () => {
-    const uid = document.getElementById('uid-search').value;
-    const totalBalance = parseFloat(document.getElementById('total-balance').value);
-
-    if (!uid || isNaN(totalBalance)) {
-        console.error("UID or Total Balance input is invalid");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/admin/user-balance/${uid}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            },
-            body: JSON.stringify({ totalBalance })
-        });
-
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-
-        console.log("Total balance updated successfully:", totalBalance);
-
-    } catch (error) {
-        console.error("Error updating total balance:", error);
-    }
-});
 
 //Js for custom inyteraction in pin generation
 

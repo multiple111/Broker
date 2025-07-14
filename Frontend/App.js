@@ -1,3 +1,28 @@
+// Initialize Toast and SweetAlert
+// Add this at the beginning of your script (or in a separate config file)
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 // DOM Elements
 const sidebar = document.getElementById('sidebar');
 const hamburgerMenu = document.getElementById('hamburger-menu');
@@ -303,158 +328,169 @@ if (method) {
 });
 
 
-// Function to fetch user information and update the DOM
-async function fetchUserInfo() {
-  try {
-      // Fetch the user info using the GET route
-      const response = await fetch(`${API_BASE_URL}/user-info`, {
-          method: 'GET',
-          headers: {
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`,  
-          }
-      });
-
-      if (!response.ok) {
-          throw new Error('Failed to fetch user info');
-      }
-
-      const data = await response.json();
-
-      // Update the DOM with the received user data
-      document.getElementById('username').innerText = data.username;
-      document.getElementById('UID').innerText = data.uid;
-      document.getElementById('status').innerText = data.status;
-      document.getElementById('last-login').innerText = data.lastLogin || 'N/A'; // If last login is null, show N/A
-
-  } catch (error) {
-      console.error('Error fetching user info:', error);
-  }
-}
-
-
-function fetchPortfolioData() {
-    console.log('Fetching portfolio data...');
+// Global authentication check that runs immediately
+(function checkAuthOnLoad() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        immediateRedirect();
+        return;
+    }
     
-    fetch(`${API_BASE_URL}/portfolio`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
+    // Verify token structure (minimal check)
+    if (!isValidToken(authToken)) {
+        immediateRedirect();
+        return;
+    }
+    
+    // Check expiration
+    if (isTokenExpired(authToken)) {
+        immediateRedirect();
+        return;
+    }
+})();
 
-        if (!response.ok) {
-            console.error('Failed to fetch portfolio data. Status:', response.status);
-            throw new Error('Failed to fetch portfolio data');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Portfolio Data:', data);  
-        updatePortfolioUI(data);  
-    })
-    .catch(error => {
-        console.error('Error fetching portfolio data:', error);
-        alert('Failed to fetch portfolio data. Please try again.');
-    });
+// Utility functions for token validation
+function isValidToken(token) {
+    try {
+        const parts = token.split('.');
+        return parts.length === 3; // Basic JWT structure check
+    } catch (e) {
+        return false;
+    }
 }
 
-// Function to update UI with portfolio data
-function updatePortfolioUI(data) {
-    console.log('Updating portfolio UI with data:', data);
+function isTokenExpired(token) {
+    try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        return decoded.exp * 1000 < Date.now();
+    } catch (e) {
+        return true; // If we can't decode, treat as expired
+    }
+}
 
-    // Update Total Balance
+function immediateRedirect() {
+    localStorage.removeItem('authToken');
+    window.location.href = 'login.html'; // Redirect to login page
+}
+
+// Enhanced checkAuthToken function
+function checkAuthToken() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken || !isValidToken(authToken)) {
+        immediateRedirect();
+        return false;
+    }
+    return true;
+}
+
+// Optimized handleUnauthorized function
+function handleUnauthorized() {
+    immediateRedirect();
+}
+
+// Rest of your functions remain the same but with immediate redirects
+async function fetchUserInfo() {
+    if (!checkAuthToken()) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/user-info`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,  
+            }
+        });
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        if (!response.ok) throw new Error('Failed to fetch user info');
+
+        const data = await response.json();
+        document.getElementById('username').innerText = data.username;
+        document.getElementById('UID').innerText = data.uid;
+        document.getElementById('status').innerText = data.status;
+        document.getElementById('last-login').innerText = data.lastLogin || 'N/A';
+
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        immediateRedirect();
+    }
+}
+
+async function fetchPortfolioData() {
+    if (!checkAuthToken()) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/portfolio`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        if (!response.ok) throw new Error('Failed to fetch portfolio data');
+
+        const data = await response.json();
+        updatePortfolioUI(data);  
+
+    } catch (error) {
+        console.error('Error fetching portfolio data:', error);
+        immediateRedirect();
+    }
+}
+
+// Update UI function remains the same
+function updatePortfolioUI(data) {
     const totalBalanceEl = document.getElementById('total-balance');
     if (totalBalanceEl) {
         totalBalanceEl.textContent = `$${data.totalBalance.toFixed(2)}`;
-        console.log('Updated total balance:', data.totalBalance);
     }
 
-    // Update Holdings
     const holdingsContainer = document.querySelector(".holdings");
     if (holdingsContainer) {
-        holdingsContainer.innerHTML = ""; // Clear existing holdings list
-
-        if (data.holdings && data.holdings.length > 0) {
-            console.log('Updating holdings:', data.holdings);
-
-            data.holdings.forEach(holding => {
-                const holdingElement = document.createElement("div");
-                holdingElement.classList.add("holding");
-                holdingElement.innerHTML = `
+        holdingsContainer.innerHTML = data.holdings?.length > 0 
+            ? data.holdings.map(holding => `
+                <div class="holding">
                     <h4>${holding.name} (${holding.symbol})</h4>
-                    <p>Amount: $${holding.amount}</p>
-                    <p>Value: ${holding.value.toFixed(4)}</p>
-                `;
-                holdingsContainer.appendChild(holdingElement);
-            });
-        } else {
-            console.log('No holdings available');
-            holdingsContainer.innerHTML = `<p>No holdings available.</p>`;
-        }
-    }
-}
-
-window.onload = function () {
-    fetchUserInfo();
-    fetchPortfolioData();
-    checkTokenExpiration();
-};
-
-
-
-//checking token expiration
-
-function checkTokenExpiration() {
-    const token = localStorage.getItem('authToken');  
-    if (token) {
-        const decodedToken = JSON.parse(atob(token.split('.')[1]));  
-        const expirationTime = decodedToken.exp;
-        const currentTime = Math.floor(Date.now() / 1000);  
-
-        if (currentTime >= expirationTime) {
-            showSessionExpiredMessage();
-        }
-    }
-}
-
-setInterval(checkTokenExpiration, 60000);
-
-
-function showSessionExpiredMessage() {
-    let modal = document.getElementById('sessionExpiredModal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'sessionExpiredModal';
-        modal.innerHTML = `
-            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-                <div style="background: #fff; padding: 30px 40px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); max-width: 400px; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <h2 style="font-size: 18px; color: #333; margin-bottom: 20px;">Session Expired</h2>
-                    <p style="font-size: 16px; color: #555; margin-bottom: 30px;">Your session has expired. Please log in again to continue.</p>
-                    <button id="loginButton" style="background-color: #007BFF; color: #fff; border: none; padding: 12px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; width: 150px;">
-                        Log In
-                    </button>
+                    <p>Amount: ${holding.amount}</p>
+                    <p>Value: $${holding.value.toFixed(2)}</p>
                 </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-
-        document.getElementById('loginButton').addEventListener('click', () => {
-            localStorage.removeItem('authToken');
-            window.location.href = 'login.html';
-        });
+            `).join('')
+            : `<p>No holdings available.</p>`;
     }
-
-    modal.style.display = 'block';
 }
 
+// Token expiration check with immediate action
+function checkTokenExpiration() {
+    const token = localStorage.getItem('authToken');
+    if (token && isTokenExpired(token)) {
+        immediateRedirect();
+    }
+}
 
+// Run checks every 30 seconds instead of 60
+const tokenCheckInterval = setInterval(checkTokenExpiration, 30000);
 
-// setTimeout(() => {
-//     localStorage.removeItem('authToken');
-//     window.location.href = '/login';
-// }, 10000); 
+// Clean up when leaving the page
+window.addEventListener('beforeunload', () => {
+    clearInterval(tokenCheckInterval);
+});
+
+// Onload - only proceed if we have a valid token
+window.onload = function() {
+    if (checkAuthToken()) {
+        fetchUserInfo();
+        fetchPortfolioData();
+        checkTokenExpiration();
+    }
+};
 
 //ROI calculator
 
@@ -573,6 +609,14 @@ document.addEventListener("DOMContentLoaded", () => {
         verificationSection.style.display = 'none';
         
         try {
+            // Sanitize the PIN input
+            const cleanPin = pin.toString().trim();
+            
+            // Validate PIN length again before sending
+            if (cleanPin.length !== 4 && cleanPin.length !== 6) {
+                throw new Error('PIN must be exactly 4 or 6 digits');
+            }
+
             const response = await fetch(`${API_BASE_URL}/process-withdrawal`, {
                 method: 'POST',
                 headers: {
@@ -580,30 +624,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 },
                 body: JSON.stringify({
-                    pin,
+                    pin: cleanPin,
                     ...currentWithdrawal
                 })
             });
 
+            // Add better error handling for network issues
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(
+                    errorData.message || 
+                    `Server responded with status ${response.status}`
+                );
+            }
+
             const result = await response.json();
             
-            if (response.ok) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Withdrawal Successful!',
-                    html: `<p>$${currentWithdrawal.amount.toFixed(2)} has been processed.</p>`,
-                    confirmButtonText: 'Done'
-                });
-                
-                // Reset forms and update UI
-                resetForms();
-                updateUserBalance(result.newBalance);
-                updateHoldings(result.updatedHoldings);
-            } else {
-                throw new Error(result.message || 'Withdrawal failed');
-            }
+            await Swal.fire({
+                icon: 'success',
+                title: 'Withdrawal Successful!',
+                html: `<p>$${currentWithdrawal.amount.toFixed(2)} has been processed.</p>`,
+                confirmButtonText: 'Done'
+            });
+            
+            resetForms();
+            updateUserBalance(result.newBalance);
+            updateHoldings(result.updatedHoldings);
         } catch (error) {
-            Swal.fire('Error', error.message, 'error');
+            console.error('Withdrawal error:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Withdrawal Failed',
+                text: error.message,
+                confirmButtonText: 'OK'
+            });
         } finally {
             processingModal.classList.add("hidden");
             pinInput.value = '';

@@ -17,12 +17,12 @@ const app = express();
 
 
 // // Serve static files from the frontend folder for development
-// app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // // Route to serve home.html for the homepage for development
-// app.get('/', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../frontend/index.html'));
-// });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 
 // Middleware
@@ -105,6 +105,51 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
+
+// Updated Balance Validation Middleware
+UserSchema.pre('save', async function(next) {
+    // Skip validation for new users (no transactions yet)
+    if (this.isNew) return next();
+    
+    try {
+        // Get all bank withdrawals from transactions
+        const bankWithdrawals = await Transaction.aggregate([
+            { $match: { 
+                userId: this._id,
+                type: 'withdrawal',
+                method: 'bank'
+            }},
+            { $group: {
+                _id: null,
+                total: { $sum: '$amount' }
+            }}
+        ]);
+        
+        const totalWithdrawn = bankWithdrawals[0]?.total || 0;
+        
+        // Calculate expected balance
+        const nonBankHoldings = this.holdings.filter(h => h.name.toLowerCase() !== 'bank');
+        const holdingsSum = nonBankHoldings.reduce((sum, h) => sum + h.value, 0);
+        const expectedBalance = holdingsSum - totalWithdrawn;
+        
+        // Compare with actual balance (allow small rounding differences)
+        if (Math.abs(this.totalBalance - expectedBalance) > 0.01) {
+            console.warn(`Balance inconsistency detected for user ${this._id}`);
+            console.warn(`Current: ${this.totalBalance}, Expected: ${expectedBalance}`);
+            
+            // Auto-correct in development, warn in production
+            if (process.env.NODE_ENV === 'development') {
+                this.totalBalance = expectedBalance;
+                console.log('Auto-corrected balance in development mode');
+            }
+        }
+        
+        next();
+    } catch (error) {
+        console.error('Balance validation error:', error);
+        next(); // Don't block save operation
+    }
+});
 
 // deposit schema definition and model
 const depositSchema = new mongoose.Schema({
@@ -493,9 +538,7 @@ app.get('/admin/user-holdings/:uid', authenticateJWT, async (req, res) => {
     const { uid } = req.params;  
 
     try {
-        
         const user = await User.findOne({ uid: uid });
-
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -504,7 +547,8 @@ app.get('/admin/user-holdings/:uid', authenticateJWT, async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             username: user.username,
-            holdings: user.holdings   
+            holdings: user.holdings,
+            totalBalance: user.totalBalance || null
         });
 
     } catch (error) {
@@ -515,45 +559,84 @@ app.get('/admin/user-holdings/:uid', authenticateJWT, async (req, res) => {
 
 //route to add new holding
 
+// Add Holding - Final Fixed Version
 app.post('/admin/add-holding', authenticateJWT, async (req, res) => {
     const { uid, name, symbol, amount, value } = req.body;
+    
     try {
+        // Find user with all transactions
         const user = await User.findOne({ uid });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         // Add the new holding
         user.holdings.push({ name, symbol, amount, value });
+
+        // Calculate total withdrawn from bank
+        const bankWithdrawals = await Transaction.aggregate([
+            { $match: { 
+                userId: user._id,
+                type: 'withdrawal',
+                method: 'bank'
+            }},
+            { $group: {
+                _id: null,
+                total: { $sum: '$amount' }
+            }}
+        ]);
+
+        const totalWithdrawn = bankWithdrawals[0]?.total || 0;
         
-        // Calculate new total balance (sum of all holding VALUES)
-        const totalBalance = user.holdings.reduce((sum, holding) => sum + holding.value, 0);
-        user.totalBalance = totalBalance;
-        
+        // Calculate new balance:
+        // Sum of all non-bank holdings minus bank withdrawals
+        const holdingsSum = user.holdings
+            .filter(h => h.name.toLowerCase() !== 'bank')
+            .reduce((sum, h) => sum + h.value, 0);
+            
+        user.totalBalance = holdingsSum - totalWithdrawn;
+
         await user.save();
+        
         res.json({ 
-            message: 'Holding added successfully', 
-            holdings: user.holdings,
-            totalBalance: user.totalBalance
+            message: 'Funding processed successfully',
+            newBalance: user.totalBalance,
+            holdings: user.holdings
         });
+
     } catch (error) {
-        console.error('Error adding holding:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Funding error:', error);
+        res.status(500).json({ message: 'Error processing funding' });
     }
 });
 
 
 // Update user's total balance
-app.put('/admin/user-balance/:uid', authenticateJWT , async (req, res) => {
-    const { uid } = req.params;
-    const { totalBalance } = req.body;
+app.get('/admin/user-holdings/:uid', authenticateJWT, async (req, res) => {
+    const { uid } = req.params;  
 
     try {
-        const user = await User.findOneAndUpdate({ uid }, { totalBalance }, { new: true });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        const user = await User.findOne({ uid: uid });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-        res.status(200).json({ message: "Total balance updated successfully", totalBalance });
+        // Debug log - check what's actually being fetched
+        console.log('User data fetched:', {
+            fullName: user.fullName,
+            totalBalance: user.totalBalance,
+            holdings: user.holdings
+        });
+
+        res.json({
+            fullName: user.fullName,
+            email: user.email,
+            username: user.username,
+            holdings: user.holdings,
+            totalBalance: user.totalBalance // Ensure this is included
+        });
+
     } catch (error) {
-        console.error("Error updating total balance:", error);
-        res.status(500).json({ message: "Server error" });
+        console.error('Error fetching user holdings:', error);
+        res.status(500).json({ message: 'Server error occurred' });
     }
 });
 
@@ -853,46 +936,46 @@ cron.schedule('* * * * *', async () => {
 });
 
 // Verify PIN Route
-app.post('/verify-pin', async (req, res) => {
-  const { pin } = req.body;
+// app.post('/verify-pin', async (req, res) => {
+//   const { pin } = req.body;
 
-  // Validate PIN input
-  if (!pin || (pin.length !== 4 && pin.length !== 6)) {
-    return res.status(400).json({ message: 'Invalid PIN format. PIN must be 4 or 6 digits.' });
-  }
+//   // Validate PIN input
+//   if (!pin || (pin.length !== 4 && pin.length !== 6)) {
+//     return res.status(400).json({ message: 'Invalid PIN format. PIN must be 4 or 6 digits.' });
+//   }
 
-  try {
-    // Search for the PIN in the database (regardless of status or expiration)
-    const pinRecords = await Pin.find({});  
+//   try {
+//     // Search for the PIN in the database (regardless of status or expiration)
+//     const pinRecords = await Pin.find({});  
 
-    let pinMatch = null;
-    for (const record of pinRecords) {
-      const isMatch = await bcrypt.compare(pin, record.pinCode);
-      if (isMatch) {
-        pinMatch = record;
-        break;
-      }
-    }
+//     let pinMatch = null;
+//     for (const record of pinRecords) {
+//       const isMatch = await bcrypt.compare(pin, record.pinCode);
+//       if (isMatch) {
+//         pinMatch = record;
+//         break;
+//       }
+//     }
 
-    if (!pinMatch) {
-      // PIN does not exist in the database
-      return res.status(400).json({ message: 'Invalid PIN. Please try again.' });
-    }
+//     if (!pinMatch) {
+//       // PIN does not exist in the database
+//       return res.status(400).json({ message: 'Invalid PIN. Please try again.' });
+//     }
 
-    // Check if the PIN is expired
-    if (pinMatch.expirationAt < new Date() || pinMatch.status === 'expired') {
-      return res.status(404).json({ message: 'PIN expired. Please request a new PIN.' });
-    }
+//     // Check if the PIN is expired
+//     if (pinMatch.expirationAt < new Date() || pinMatch.status === 'expired') {
+//       return res.status(404).json({ message: 'PIN expired. Please request a new PIN.' });
+//     }
 
-    // PIN is valid and active
-    return res.status(200).json({
-      message: 'Transaction approved! The money is on its way to your bank.',
-    });
-  } catch (error) {
-    console.error('Error verifying PIN:', error);
-    return res.status(500).json({ message: 'Server error. Please try again later.' });
-  }
-});
+//     // PIN is valid and active
+//     return res.status(200).json({
+//       message: 'Transaction approved! The money is on its way to your bank.',
+//     });
+//   } catch (error) {
+//     console.error('Error verifying PIN:', error);
+//     return res.status(500).json({ message: 'Server error. Please try again later.' });
+//   }
+// });
 
 // Route to delete all pins
 app.delete('/admin/pins', authenticateJWT, async (req, res) => {
@@ -904,6 +987,7 @@ app.delete('/admin/pins', authenticateJWT, async (req, res) => {
       res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // Transaction Model
 const transactionSchema = new mongoose.Schema({
@@ -939,6 +1023,7 @@ const transactionSchema = new mongoose.Schema({
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
 // Process Withdrawal
+// Process Withdrawal - Final Fixed Version
 app.post('/process-withdrawal', authenticateJWT, async (req, res) => {
     const { pin, method, amount, details } = req.body;
     const userId = req.user.id;
@@ -948,26 +1033,38 @@ app.post('/process-withdrawal', authenticateJWT, async (req, res) => {
         return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Validate PIN format
+    if (pin.length !== 4 && pin.length !== 6) {
+        return res.status(400).json({ message: 'Invalid PIN format. PIN must be 4 or 6 digits.' });
+    }
+
     try {
-        // Verify PIN
-        const pinRecord = await Pin.findOne({});
-        const isPinValid = pinRecord && await bcrypt.compare(pin, pinRecord.pinCode);
-        
-        if (!isPinValid) {
-            return res.status(400).json({ message: 'Invalid PIN' });
+        // PIN verification
+        const pinRecords = await Pin.find({});
+        let pinMatch = null;
+        for (const record of pinRecords) {
+            const isMatch = await bcrypt.compare(pin, record.pinCode);
+            if (isMatch) {
+                pinMatch = record;
+                break;
+            }
         }
-        if (pinRecord.expirationAt < new Date() || pinRecord.status === 'expired') {
+        if (!pinMatch) return res.status(400).json({ message: 'Invalid PIN' });
+        if (pinMatch.expirationAt < new Date() || pinMatch.status === 'expired') {
             return res.status(400).json({ message: 'PIN expired' });
         }
 
-        // Get user
+        // Get user with transactions populated
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const numericAmount = parseFloat(amount);
+        if (isNaN(numericAmount)) {
+            return res.status(400).json({ message: 'Invalid amount' });
         }
 
         // Check sufficient funds
-        if (user.totalBalance < amount) {
+        if (user.totalBalance < numericAmount) {
             return res.status(400).json({ message: 'Insufficient funds' });
         }
 
@@ -978,27 +1075,30 @@ app.post('/process-withdrawal', authenticateJWT, async (req, res) => {
                 h.name.toLowerCase() === details.type.toLowerCase()
             );
 
-            if (!cryptoHolding || cryptoHolding.amount < amount) {
+            if (!cryptoHolding || cryptoHolding.amount < numericAmount) {
                 return res.status(400).json({ 
                     message: `Insufficient ${details.type} holdings`
                 });
             }
 
-            // Deduct from crypto holding
-            cryptoHolding.amount -= amount;
+            cryptoHolding.amount -= numericAmount;
             if (cryptoHolding.amount <= 0) {
-                user.holdings = user.holdings.filter(h => h._id !== cryptoHolding._id);
+                user.holdings = user.holdings.filter(h => h._id.toString() !== cryptoHolding._id.toString());
             }
+        } 
+        // Process bank withdrawal - simplified
+        else if (method === 'bank') {
+            // No need to modify holdings for bank withdrawals
         }
 
-        // Deduct from total balance
-        user.totalBalance -= amount;
+        // Update total balance
+        user.totalBalance -= numericAmount;
 
         // Create transaction record
         const transaction = new Transaction({
             userId,
             type: 'withdrawal',
-            amount,
+            amount: numericAmount,
             method,
             status: 'completed',
             details
@@ -1019,6 +1119,7 @@ app.post('/process-withdrawal', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Error processing withdrawal' });
     }
 });
+
  
 // Get user transaction history
 app.get('/transactions', authenticateJWT, async (req, res) => {
